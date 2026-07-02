@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentinel — Private Security Camera System</title>
+  <meta name="description" content="Watch your cameras from anywhere — without handing your footage to a vendor's AI. Motion detection runs on your hardware. Recordings stay yours.">
+  <meta property="og:title" content="Sentinel — Private Security Camera System">
+  <meta property="og:description" content="Cloud-hosted surveillance where your footage never leaves your network for AI. Open source, encrypted at rest, multi-tenant from day one.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://opensentry-command.fly.dev/images/og-card.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Sentinel — Private Security Camera System">
+  <meta name="twitter:description" content="Cloud-hosted surveillance where your footage never leaves your network. Open source.">
+  <meta name="twitter:image" content="https://opensentry-command.fly.dev/images/og-card.jpg">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230a0a0f'/><text x='50' y='68' font-size='52' font-weight='700' text-anchor='middle' fill='%2322c55e' font-family='sans-serif'>S</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #08090d;
+      --bg-1: #0f1119;
+      --bg-2: #161924;
+      --bg-3: #1e2230;
+      --border: rgba(255,255,255,0.07);
+      --border-2: rgba(255,255,255,0.12);
+      --green: #22c55e;
+      --green-dim: rgba(34,197,94,0.1);
+      --green-glow: rgba(34,197,94,0.4);
+      --purple: #a855f7;
+      --purple-dim: rgba(168,85,247,0.1);
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --blue: #3b82f6;
+      --text: #f4f5f7;
+      --text-2: #a1a1aa;
+      --text-3: #6b7280;
+      --text-4: #3f4350;
+      --grad: linear-gradient(135deg, #22c55e, #a855f7);
+      --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 20px;
+      --max: 1080px;
+      --font: 'Outfit', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    a { color: var(--green); text-decoration: none; }
+    ::selection { background: var(--green-dim); color: var(--text); }
+    img { max-width: 100%; display: block; }
+
+    /* ── Nav ── */
+    .nav { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 14px; border-radius: 999px; background: rgba(10,10,15,0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0,0,0,0.5); animation: slideDown .6s ease both; max-width: calc(100vw - 32px); }
+    @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    .nav-brand { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; white-space: nowrap; color: var(--text); }
+    .nav-brand .s { color: var(--green); font-weight: 700; }
+    .nav-links { display: flex; align-items: center; gap: 2px; }
+    .nav-links a { font-size: 13px; font-weight: 500; color: var(--text-2); padding: 6px 12px; border-radius: 999px; transition: all .15s; }
+    .nav-links a:hover { color: var(--text); background: var(--bg-3); }
+    .nav-cta { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; color: #08090d !important; background: var(--green); padding: 6px 14px; border-radius: 999px; transition: all .15s; }
+    .nav-cta:hover { background: #2ad66c; transform: translateY(-1px); }
+    @media (max-width: 720px) { .nav-links { display: none; } }
+
+    /* ── Hero ── */
+    .hero { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    #hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .hero-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 60%, transparent 0%, var(--bg) 85%); pointer-events: none; z-index: 1; }
+    .hero-content { position: relative; z-index: 2; text-align: center; padding: 0 24px; max-width: 740px; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; border-radius: 999px; background: rgba(10,10,15,0.6); backdrop-filter: blur(8px); border: 1px solid var(--border); font-size: 12px; font-family: var(--mono); color: var(--text-2); margin-bottom: 28px; animation: heroIn .8s .2s ease both; }
+    .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+    .hero h1 { font-size: clamp(42px, 7vw, 78px); font-weight: 800; line-height: 1.0; letter-spacing: -2.5px; margin-bottom: 20px; animation: heroIn .8s .3s ease both; }
+    .hero h1 .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { font-size: clamp(16px, 2vw, 20px); color: var(--text-2); max-width: 580px; margin: 0 auto 36px; line-height: 1.65; animation: heroIn .8s .4s ease both; }
+    .hero p strong { color: var(--text); font-weight: 600; }
+    .hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; animation: heroIn .8s .5s ease both; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 28px; border-radius: var(--r-sm); font-size: 15px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all .2s; border: none; text-decoration: none; }
+    .btn-green { background: var(--green); color: #08090d; }
+    .btn-green:hover { background: #2ad66c; transform: translateY(-2px); box-shadow: 0 10px 30px var(--green-glow); }
+    .btn-ghost { background: rgba(10,10,15,0.5); backdrop-filter: blur(8px); color: var(--text); border: 1px solid var(--border-2); }
+    .btn-ghost:hover { background: var(--bg-2); border-color: var(--text-3); transform: translateY(-2px); }
+    .hero-meta { margin-top: 20px; font-size: 12px; color: var(--text-3); font-family: var(--mono); animation: heroIn .8s .6s ease both; }
+    .hero-meta .sep { opacity: .4; margin: 0 8px; }
+    @keyframes heroIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    .scroll-hint { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; color: var(--text-4); font-family: var(--mono); animation: bounce 2s ease-in-out infinite; }
+    .scroll-hint .line { width: 1px; height: 24px; background: var(--text-4); }
+    @keyframes bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(8px); } }
+
+    /* ── Sections ── */
+    section { padding: 100px 0; position: relative; }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+    .label { display: inline-block; font-family: var(--mono); font-size: 12px; color: var(--green); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+    .h2 { font-size: clamp(28px, 4.5vw, 46px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
+    .h2 .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .sub { font-size: 17px; color: var(--text-2); max-width: 560px; margin-bottom: 56px; line-height: 1.6; }
+
+    /* ── Camera grid mock ── */
+    .cam-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .cam-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; position: relative; aspect-ratio: 16/10; transition: all .25s; }
+    .cam-card:hover { border-color: var(--border-2); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .cam-feed { position: absolute; inset: 0; overflow: hidden; }
+    .cam-scan { position: absolute; inset: 0; }
+    .cam-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(8,9,13,0.85)); }
+    .cam-label { position: absolute; bottom: 10px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center; z-index: 2; }
+    .cam-name { font-size: 12px; font-weight: 500; color: var(--text); }
+    .cam-status { display: flex; align-items: center; gap: 5px; font-size: 10px; font-family: var(--mono); color: var(--green); }
+    .cam-status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 4px var(--green); animation: pulse 2s infinite; }
+    .cam-status.offline { color: var(--text-3); }
+    .cam-status.offline .dot { background: var(--text-4); box-shadow: none; animation: none; }
+    .cam-status.motion { color: var(--amber); }
+    .cam-status.motion .dot { background: var(--amber); box-shadow: 0 0 4px var(--amber); }
+    .cam-rec { position: absolute; top: 10px; right: 10px; font-size: 10px; color: var(--red); display: flex; align-items: center; gap: 4px; font-family: var(--mono); z-index: 2; }
+    .cam-rec .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: pulse 1s infinite; }
+    @media (max-width: 700px) { .cam-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 420px) { .cam-grid { grid-template-columns: 1fr; } }
+
+    /* ── Feature columns ── */
+    .features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .feat { padding: 28px 24px; border-radius: var(--r-lg); background: var(--bg-1); border: 1px solid var(--border); position: relative; overflow: hidden; transition: all .2s; }
+    .feat:hover { border-color: var(--border-2); transform: translateY(-3px); }
+    .feat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; opacity: 0; transition: opacity .2s; }
+    .feat:hover::before { opacity: 1; }
+    .feat.g::before { background: var(--green); }
+    .feat.p::before { background: var(--purple); }
+    .feat.a::before { background: var(--amber); }
+    .feat.b::before { background: var(--blue); }
+    .feat .ico { width: 40px; height: 40px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; background: var(--bg-3); border: 1px solid var(--border-2); }
+    .feat.g .ico { color: var(--green); }
+    .feat.p .ico { color: var(--purple); }
+    .feat.a .ico { color: var(--amber); }
+    .feat.b .ico { color: var(--blue); }
+    .feat .ico svg { width: 20px; height: 20px; }
+    .feat h3 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+    .feat p { font-size: 14px; color: var(--text-3); line-height: 1.55; }
+    .feat p code { font-family: var(--mono); font-size: 12px; color: var(--green); background: var(--green-dim); padding: 1px 5px; border-radius: 3px; }
+    .feat .pro { font-size: 10px; font-family: var(--mono); font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--purple-dim); color: var(--purple); margin-left: 8px; vertical-align: middle; }
+    @media (max-width: 700px) { .features { grid-template-columns: 1fr; } }
+
+    /* ── Privacy split ── */
+    .privacy-split { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    @media (max-width: 800px) { .privacy-split { grid-template-columns: 1fr; } }
+    .privacy-visual { display: flex; justify-content: center; position: relative; }
+    .shield-orb { width: 200px; height: 200px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; }
+    .shield-orb::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, var(--green-dim), transparent 70%); }
+    .shield-orb svg { width: 64px; height: 64px; color: var(--green); z-index: 2; }
+    .orb-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--green); opacity: 0; }
+    .orb-ring:nth-child(1) { animation: ringExp 3s ease-out infinite; }
+    .orb-ring:nth-child(2) { animation: ringExp 3s ease-out infinite 1s; }
+    .orb-ring:nth-child(3) { animation: ringExp 3s ease-out infinite 2s; }
+    @keyframes ringExp { 0% { transform: scale(1); opacity: .4; } 100% { transform: scale(1.7); opacity: 0; } }
+    .privacy-pts { list-style: none; }
+    .privacy-pts li { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .privacy-pts li:last-child { border-bottom: none; }
+    .privacy-pts .chk { flex-shrink: 0; width: 24px; height: 24px; border-radius: 6px; background: var(--green-dim); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 14px; margin-top: 2px; }
+    .privacy-pts strong { display: block; font-size: 16px; margin-bottom: 4px; font-weight: 600; }
+    .privacy-pts span { font-size: 14px; color: var(--text-3); }
+    .privacy-pts code { font-family: var(--mono); font-size: 12px; color: var(--green); background: var(--green-dim); padding: 1px 5px; border-radius: 3px; }
+
+    /* ── Architecture flow ── */
+    .arch { display: flex; flex-direction: column; gap: 0; align-items: stretch; }
+    .arch-node { padding: 24px; border-radius: var(--r-lg); background: var(--bg-1); border: 1px solid var(--border); display: flex; align-items: center; gap: 16px; transition: all .2s; }
+    .arch-node:hover { border-color: var(--border-2); }
+    .arch-node .arch-emoji { font-size: 28px; }
+    .arch-node .arch-info { flex: 1; }
+    .arch-node h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .arch-node p { font-size: 13px; color: var(--text-3); }
+    .arch-node .arch-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .arch-node .arch-tags span { font-size: 10px; font-family: var(--mono); padding: 2px 7px; border-radius: 4px; background: var(--bg-3); border: 1px solid var(--border); color: var(--text-2); }
+    .arch-connector { display: flex; flex-direction: column; align-items: center; padding: 12px 0; color: var(--text-4); }
+    .arch-connector .line { width: 2px; height: 24px; background: var(--border-2); }
+    .arch-connector .label { font-size: 10px; font-family: var(--mono); margin-top: 4px; color: var(--text-3); }
+    .arch-connector .line-bot { width: 2px; height: 24px; background: var(--border-2); margin-bottom: 4px; }
+
+    /* ── Quick start ── */
+    .steps { display: flex; flex-direction: column; gap: 0; max-width: 580px; margin: 0 auto; }
+    .step { display: flex; gap: 20px; padding: 24px 0; position: relative; }
+    .step:not(:last-child)::after { content: ''; position: absolute; left: 20px; top: 56px; bottom: -12px; width: 2px; background: var(--border); }
+    .step-num { width: 40px; height: 40px; border-radius: 10px; background: var(--green-dim); border: 1px solid rgba(34,197,94,0.2); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; z-index: 1; }
+    .step-body { flex: 1; padding-top: 8px; }
+    .step-body h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .step-body p { font-size: 14px; color: var(--text-3); }
+    .step-body code { font-family: var(--mono); font-size: 12px; color: var(--green); background: var(--green-dim); padding: 2px 6px; border-radius: 4px; }
+
+    /* ── MCP ── */
+    .mcp-section { background: linear-gradient(180deg, transparent, rgba(8,9,13,0.5)); }
+    .mcp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    @media (max-width: 800px) { .mcp-grid { grid-template-columns: 1fr; } }
+    .mcp-quotes { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+    .mcp-quote { padding: 12px 16px; border-radius: var(--r-md); background: var(--bg-1); border: 1px solid var(--border); font-size: 14px; color: var(--text-2); border-left: 3px solid var(--green); transition: all .2s; }
+    .mcp-quote:hover { border-color: var(--border-2); transform: translateX(4px); }
+    .mcp-code { background: #060709; border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+    .mcp-code-bar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .mcp-code-bar .d { width: 10px; height: 10px; border-radius: 50%; }
+    .mcp-code-bar .d.r { background: #ff5f56; }
+    .mcp-code-bar .d.y { background: #ffbd2e; }
+    .mcp-code-bar .d.g { background: #27c93f; }
+    .mcp-code-bar .f { font-size: 11px; color: var(--text-4); margin-left: auto; font-family: var(--mono); }
+    .mcp-code pre { padding: 20px; font-family: var(--mono); font-size: 13px; color: var(--text-2); line-height: 1.7; overflow-x: auto; }
+    .mcp-code pre .k { color: var(--purple); }
+    .mcp-code pre .s { color: var(--green); }
+    .mcp-code pre .c { color: var(--text-4); }
+
+    /* ── CTA ── */
+    .cta { text-align: center; padding: 100px 24px; }
+    .cta-inner { max-width: 700px; margin: 0 auto; position: relative; }
+    .cta-inner::before { content: ''; position: absolute; top: -60%; left: 50%; transform: translateX(-50%); width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, var(--green-dim), transparent 60%); pointer-events: none; }
+    .cta-inner > * { position: relative; }
+    .cta h2 { font-size: clamp(28px, 4vw, 42px); font-weight: 800; letter-spacing: -1.5px; margin-bottom: 16px; }
+    .cta p { font-size: 18px; color: var(--text-2); margin-bottom: 32px; }
+
+    /* ── Footer ── */
+    footer { border-top: 1px solid var(--border); padding: 48px 0 32px; }
+    .fgrid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+    @media (max-width: 700px) { .fgrid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 420px) { .fgrid { grid-template-columns: 1fr; } }
+    .fbrand .nav-brand { font-size: 17px; margin-bottom: 12px; color: var(--text); }
+    .fbrand p { font-size: 13px; color: var(--text-3); max-width: 280px; line-height: 1.6; }
+    .fcol h5 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); margin-bottom: 12px; font-weight: 600; }
+    .fcol ul { list-style: none; }
+    .fcol li { margin-bottom: 8px; }
+    .fcol a { font-size: 13px; color: var(--text-2); }
+    .fcol a:hover { color: var(--green); }
+    .fbottom { display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-3); }
+    .fbottom .pills { display: flex; gap: 8px; }
+    .fbottom .pill { font-size: 11px; padding: 3px 10px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--border); }
+    @media (max-width: 500px) { .fbottom { flex-direction: column; gap: 12px; text-align: center; } }
+
+    /* ── Scroll reveal ── */
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <a href="#" class="nav-brand"><span class="s">Sentinel</span></a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#quickstart">Quick Start</a>
+      <a href="#mcp">MCP</a>
+    </div>
+    <a href="https://opensentry-command.fly.dev/sign-up" class="nav-cta">Get Started</a>
+  </nav>
+
+  <!-- Hero with canvas animation -->
+  <section class="hero" style="padding: 0;">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-vignette"></div>
+    <div class="hero-content">
+      <div class="hero-badge"><span class="dot"></span> Cloud-Hosted · Multi-Tenant · Open Source</div>
+      <h1>Your cameras,<br><span class="grad">your footage</span>, your control.</h1>
+      <p>Watch your cameras from anywhere — without handing your footage to a vendor's AI. Motion detection runs on your hardware. <strong>Recordings stay yours.</strong></p>
+      <div class="hero-ctas">
+        <a href="https://opensentry-command.fly.dev/sign-up" class="btn btn-green">Get Started Free</a>
+        <a href="https://opensentry-command.fly.dev" class="btn btn-ghost">View Live App</a>
+      </div>
+      <div class="hero-meta">AES-256 encrypted · Sub-10s latency · No inbound ports · AGPL-3.0</div>
+    </div>
+    <div class="scroll-hint">scroll<div class="line"></div></div>
+  </section>
+
+  <!-- Camera grid mockup -->
+  <section style="padding-top: 40px;">
+    <div class="wrap">
+      <div class="reveal"><span class="label">Live Dashboard</span></div>
+      <h2 class="h2 reveal" style="margin-top: 4px;">Every camera,<br><span class="grad">one dashboard.</span></h2>
+      <p class="sub reveal">Live HLS streaming with sub-10-second latency. CloudNode uploads segments in real-time — the cloud holds only a rolling 60-second buffer in memory.</p>
+
+      <div class="cam-grid reveal" id="camGrid">
+        <!-- Camera cards with animated scan lines -->
+        <div class="cam-card">
+          <div class="cam-feed"><div class="cam-scan" style="background:linear-gradient(180deg,#0a1218,#0f1a20,#0a1218)"></div></div>
+          <div class="cam-overlay"></div>
+          <div class="cam-rec"><span class="dot"></span>REC</div>
+          <div class="cam-label"><span class="cam-name">Front Door</span><span class="cam-status"><span class="dot"></span>LIVE</span></div>
+        </div>
+        <div class="cam-card">
+          <div class="cam-feed"><div class="cam-scan" style="background:linear-gradient(180deg,#0a0f18,#0f1419,#0a0f18)"></div></div>
+          <div class="cam-overlay"></div>
+          <div class="cam-label"><span class="cam-name">Backyard</span><span class="cam-status motion"><span class="dot"></span>MOTION</span></div>
+        </div>
+        <div class="cam-card">
+          <div class="cam-feed"><div class="cam-scan" style="background:linear-gradient(180deg,#0a0d15,#0e1018,#0a0d15)"></div></div>
+          <div class="cam-overlay"></div>
+          <div class="cam-rec"><span class="dot"></span>REC</div>
+          <div class="cam-label"><span class="cam-name">Garage</span><span class="cam-status"><span class="dot"></span>LIVE</span></div>
+        </div>
+        <div class="cam-card">
+          <div class="cam-feed"><div class="cam-scan" style="background:linear-gradient(180deg,#0d0a15,#130e1a,#0d0a15)"></div></div>
+          <div class="cam-overlay"></div>
+          <div class="cam-label"><span class="cam-name">Living Room</span><span class="cam-status offline"><span class="dot"></span>OFFLINE</span></div>
+        </div>
+        <div class="cam-card">
+          <div class="cam-feed"><div class="cam-scan" style="background:linear-gradient(180deg,#0a100e,#0d1411,#0a100e)"></div></div>
+          <div class="cam-overlay"></div>
+          <div class="cam-rec"><span class="dot"></span>REC</div>
+          <div class="cam-label"><span class="cam-name">Driveway</span><span class="cam-status"><span class="dot"></span>LIVE</span></div>
+        </div>
+        <div class="cam-card">
+          <div class="cam-feed"><div class="cam-scan" style="background:linear-gradient(180deg,#0e0d0a,#1a140d,#0e0d0a)"></div></div>
+          <div class="cam-overlay"></div>
+          <div class="cam-label"><span class="cam-name">Side Gate</span><span class="cam-status"><span class="dot"></span>LIVE</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="wrap">
+      <div class="reveal"><span class="label">Features</span></div>
+      <h2 class="h2 reveal" style="margin-top: 4px;">Designed for<br><span class="grad">modern security.</span></h2>
+      <p class="sub reveal">Cloud-hosted, globally accessible, and secure by default — without the privacy trade-offs of traditional surveillance.</p>
+
+      <div class="features">
+        <div class="feat g reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19a4.5 4.5 0 100-9 4.5 4.5 0 000 9zM3 16V8a2 2 0 012-2h12a2 2 0 012 2v3M8 6V4M12 6V4"/></svg></div>
+          <h3>Hosted by us</h3>
+          <p>Sign up and connect cameras — no servers to run, no port forwarding, no static IPs, no VPN required.</p>
+        </div>
+        <div class="feat p reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+          <h3>Encrypted end to end to disk</h3>
+          <p>HTTPS from camera to browser. Recordings sealed at rest with <code>AES-256-GCM</code> using a machine-id-derived key — a stolen drive is unreadable.</p>
+        </div>
+        <div class="feat g reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+          <h3>In-memory streaming</h3>
+          <p>Live HLS segments cached in RAM by Command Center — fast, simple, and no per-request object-store fees.</p>
+        </div>
+        <div class="feat b reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+          <h3>Multi-tenant teams</h3>
+          <p>Organizations with role-based permissions. Admin and member roles. Invite team members to monitor cameras together.</p>
+        </div>
+        <div class="feat a reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7zM14 5H3a2 2 0 00-2 2v10a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2z"/></svg></div>
+          <h3>Real-time streaming</h3>
+          <p>HLS streaming with sub-10-second latency. CloudNode uploads segments in real-time for near-live viewing.</p>
+        </div>
+        <div class="feat p reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+          <h3>MCP integration <span class="pro">PRO</span></h3>
+          <p>Give AI tools direct visual access to your cameras via the Model Context Protocol. 23 tools, scope-locked per key.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Privacy -->
+  <section id="privacy">
+    <div class="wrap">
+      <div class="privacy-split">
+        <div class="privacy-visual reveal">
+          <div class="shield-orb">
+            <div class="orb-ring"></div><div class="orb-ring"></div><div class="orb-ring"></div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          </div>
+        </div>
+        <div class="reveal">
+          <span class="label">Privacy by design</span>
+          <h2 class="h2">Your recordings never<br>leave your <span class="grad">CloudNode.</span></h2>
+          <p class="sub">Cloud security cameras stream every frame to a vendor's servers. Your CloudNode is different — it sits on your network, records to its own encrypted disk, and runs motion analysis locally. The cloud only ever holds a rolling 60-second live buffer in memory.</p>
+          <ul class="privacy-pts">
+            <li><span class="chk">✓</span><div><strong>Motion detection runs locally</strong><span>FFmpeg threshold detection on your CloudNode. Pixel math, not ML.</span></div></li>
+            <li><span class="chk">✓</span><div><strong>Recordings are encrypted at rest</strong><span><code>AES-256-GCM</code> with a key derived from your device's OS machine ID.</span></div></li>
+            <li><span class="chk">✓</span><div><strong>No analytics, no ad networks, no data brokers</strong><span>Verifiable in our source with a single grep.</span></div></li>
+            <li><span class="chk">✓</span><div><strong>We don't hold your video</strong><span>Recordings live on your CloudNode, not our cloud. If law enforcement asks for footage, they have to ask you.</span></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section id="architecture">
+    <div class="wrap">
+      <div class="reveal"><span class="label">Architecture</span></div>
+      <h2 class="h2 reveal" style="margin-top: 4px;">Two components.<br><span class="grad">Zero inbound ports.</span></h2>
+      <p class="sub reveal">CloudNode at your premises. Command Center in the cloud. CloudNode pushes out — no router config, no exposed ports.</p>
+
+      <div class="arch reveal">
+        <div class="arch-node">
+          <span class="arch-emoji">📹</span>
+          <div class="arch-info">
+            <h3>CloudNode — your premises</h3>
+            <p>Runs on any device with a USB camera. Captures video, generates HLS segments, pushes them to Command Center over HTTPS.</p>
+            <div class="arch-tags"><span>USB Camera</span><span>FFmpeg</span><span>HLS</span><span>Win · Linux · macOS</span></div>
+          </div>
+        </div>
+        <div class="arch-connector"><div class="line"></div><span class="label">HTTPS · outbound only</span><div class="line-bot"></div></div>
+        <div class="arch-node">
+          <span class="arch-emoji">🖥️</span>
+          <div class="arch-info">
+            <h3>Command Center — our cloud</h3>
+            <p>Web dashboard for viewing cameras, managing organizations, and controlling access. In-memory HLS cache, Clerk multi-tenant auth, 23 MCP tools.</p>
+            <div class="arch-tags"><span>FastAPI</span><span>React 19</span><span>SQLite</span><span>Fly.io</span></div>
+          </div>
+        </div>
+        <div class="arch-connector"><div class="line"></div><span class="label">HTTPS</span><div class="line-bot"></div></div>
+        <div class="arch-node">
+          <span class="arch-emoji">🌐</span>
+          <div class="arch-info">
+            <h3>Browser — any device</h3>
+            <p>Watch live video, review motion events, manage recordings. Authenticated HLS via same-origin — no third-party CDN.</p>
+            <div class="arch-tags"><span>HLS.js</span><span>Clerk JWT</span><span>Any browser</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Start -->
+  <section id="quickstart">
+    <div class="wrap">
+      <div class="reveal"><span class="label">Quick Start</span></div>
+      <h2 class="h2 reveal" style="margin-top: 4px;">Online in<br><span class="grad">under 5 minutes.</span></h2>
+
+      <div class="steps reveal">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h3>Create a free account</h3>
+            <p>Sign up at <a href="https://opensentry-command.fly.dev/sign-up">opensentry-command.fly.dev</a>. Takes about 30 seconds — you'll create your organization on the way in.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h3>Install CloudNode</h3>
+            <p>Linux/macOS: <code>curl -fsSL https://opensentry-command.fly.dev/install.sh | bash</code></p>
+            <p style="margin-top:4px">Windows: <a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode/releases/latest">download the MSI</a></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h3>Connect your USB camera</h3>
+            <p>CloudNode auto-detects connected USB cameras. No manual configuration needed.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h3>Enter your API key</h3>
+            <p>Generate an API key in Command Center settings, enter it during CloudNode setup. Your camera appears instantly.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal" style="text-align:center; margin-top:40px;">
+        <a href="https://opensentry-command.fly.dev/sign-up" class="btn btn-green">Get Started Free</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MCP -->
+  <section id="mcp" class="mcp-section">
+    <div class="wrap">
+      <div class="mcp-grid">
+        <div class="reveal">
+          <span class="label">Model Context Protocol</span>
+          <h2 class="h2">Control cameras with<br><span class="grad">natural language.</span></h2>
+          <p class="sub">Pro and Pro Plus users can generate an MCP API key and connect any compatible AI tool — Claude Code, Cursor, or custom agents — directly to their cameras.</p>
+          <div class="mcp-quotes">
+            <div class="mcp-quote">"Show me what the front door camera sees"</div>
+            <div class="mcp-quote">"Watch the garage cam for 30 seconds"</div>
+            <div class="mcp-quote">"Are any cameras offline right now?"</div>
+          </div>
+          <a href="https://opensentry-command.fly.dev/pricing" class="btn btn-green">Try with Pro</a>
+        </div>
+        <div class="reveal">
+          <div class="mcp-code">
+            <div class="mcp-code-bar"><span class="d r"></span><span class="d y"></span><span class="d g"></span><span class="f">.mcp.json</span></div>
+            <pre><span class="c">// Connect Claude to your cameras</span>
+{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"sentinel"</span>: {
+      <span class="k">"type"</span>: <span class="s">"http"</span>,
+      <span class="k">"url"</span>: <span class="s">"https://opensentry-command.fly.dev/mcp"</span>,
+      <span class="k">"headers"</span>: {
+        <span class="k">"Authorization"</span>: <span class="s">"Bearer osc_..."</span>
+      }
+    }
+  }
+}</pre>
+          </div>
+          <p style="text-align:center; margin-top:16px; font-size:13px; color:var(--text-3);"><strong style="color:var(--text)">23 tools</strong> available · scope-locked per key · read-only or custom scopes</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="cta-inner reveal">
+      <h2>Ready to see<br><span class="grad">your cameras?</span></h2>
+      <p>Cloud-hosted, globally accessible, and free to start.</p>
+      <div class="hero-ctas">
+        <a href="https://opensentry-command.fly.dev/sign-up" class="btn btn-green">Get Started Free</a>
+        <a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode" class="btn btn-ghost">Get CloudNode</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="wrap">
+      <div class="fgrid">
+        <div class="fbrand">
+          <div class="nav-brand"><span class="s">Sentinel</span> by SourceBox</div>
+          <p>A private security camera system. Cloud-hosted surveillance where your footage never leaves your network for AI. Open source, encrypted at rest, multi-tenant from day one.</p>
+        </div>
+        <div class="fcol"><h5>Product</h5><ul><li><a href="#features">Features</a></li><li><a href="#privacy">Privacy</a></li><li><a href="#architecture">Architecture</a></li><li><a href="#mcp">MCP</a></li></ul></div>
+        <div class="fcol"><h5>Resources</h5><ul><li><a href="https://opensentry-command.fly.dev">Live App</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command">Command Center</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode">CloudNode</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-HomeAssistant">Home Assistant</a></li></ul></div>
+        <div class="fcol"><h5>Community</h5><ul><li><a href="https://opensentry-command.fly.dev/security">Security</a></li><li><a href="https://opensentry-command.fly.dev/pricing">Pricing</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command/issues">Report a bug</a></li><li><a href="https://opensentry-command.fly.dev/legal/terms">Terms</a></li></ul></div>
+      </div>
+      <div class="fbottom">
+        <span>© 2026 SourceBox LLC · AGPL-3.0</span>
+        <div class="pills"><span class="pill">Open Source</span><span class="pill">Encrypted</span><span class="pill">Private</span></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Hero canvas animation: camera grid scan -->
+  <script>
+  (function() {
+    var canvas = document.getElementById('hero-canvas');
+    var ctx = canvas.getContext('2d');
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w, h, mouseX = 0, mouseY = 0, smoothX = 0, smoothY = 0;
+
+    function resize() {
+      w = window.innerWidth; h = window.innerHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+      ctx.scale(dpr, dpr);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Mouse tracking
+    document.addEventListener('mousemove', function(e) {
+      mouseX = (e.clientX / w - 0.5) * 2;
+      mouseY = (e.clientY / h - 0.5) * 2;
+    });
+
+    // Camera feed tiles — floating in the background
+    var tiles = [];
+    var TILE_COLS = 4, TILE_ROWS = 3;
+    for (var r = 0; r < TILE_ROWS; r++) {
+      for (var c = 0; c < TILE_COLS; c++) {
+        tiles.push({
+          col: c, row: r,
+          phase: Math.random() * Math.PI * 2,
+          scanY: Math.random(),
+          scanSpeed: 0.003 + Math.random() * 0.004,
+          alpha: 0.04 + Math.random() * 0.08
+        });
+      }
+    }
+
+    var heroVisible = true;
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function(entries) {
+        heroVisible = entries[0].isIntersecting;
+      }).observe(document.querySelector('.hero'));
+    }
+
+    function animate(t) {
+      requestAnimationFrame(animate);
+      if (!heroVisible) return;
+      var time = t * 0.001;
+
+      // Smooth mouse parallax
+      smoothX += (mouseX - smoothX) * 0.03;
+      smoothY += (mouseY - smoothY) * 0.03;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Background subtle gradient
+      var grad = ctx.createRadialGradient(w * 0.5, h * 0.45, 0, w * 0.5, h * 0.45, w * 0.7);
+      grad.addColorStop(0, 'rgba(34,197,94,0.04)');
+      grad.addColorStop(0.5, 'rgba(10,10,15,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Camera feed tiles
+      var tileW = Math.min(w / (TILE_COLS + 1.5), 180);
+      var tileH = tileW * 0.625;
+      var totalW = tileW * TILE_COLS + 12 * (TILE_COLS - 1);
+      var totalH = tileH * TILE_ROWS + 12 * (TILE_ROWS - 1);
+      var startX = (w - totalW) / 2;
+      var startY = (h - totalH) / 2 - 40;
+
+      tiles.forEach(function(tile) {
+        var x = startX + tile.col * (tileW + 12) + smoothX * 15;
+        var y = startY + tile.row * (tileH + 12) + smoothY * 10 + Math.sin(time * 0.3 + tile.phase) * 4;
+
+        // Tile background
+        ctx.fillStyle = 'rgba(15,17,25,' + tile.alpha + ')';
+        roundRect(ctx, x, y, tileW, tileH, 8);
+        ctx.fill();
+
+        // Border
+        ctx.strokeStyle = 'rgba(34,197,94,' + (tile.alpha * 1.5) + ')';
+        ctx.lineWidth = 1;
+        roundRect(ctx, x, y, tileW, tileH, 8);
+        ctx.stroke();
+
+        // Scan line — moves down each tile
+        var scanPx = tile.scanY * tileH;
+        tile.scanY += tile.scanSpeed;
+        if (tile.scanY > 1) tile.scanY = 0;
+
+        var scanGrad = ctx.createLinearGradient(x, y + scanPx - 8, x, y + scanPx + 8);
+        scanGrad.addColorStop(0, 'rgba(34,197,94,0)');
+        scanGrad.addColorStop(0.5, 'rgba(34,197,94,' + (tile.alpha * 4) + ')');
+        scanGrad.addColorStop(1, 'rgba(34,197,94,0)');
+        ctx.fillStyle = scanGrad;
+        ctx.fillRect(x, y + scanPx - 8, tileW, 16);
+
+        // Live indicator dot (top-right of each tile)
+        ctx.beginPath();
+        ctx.arc(x + tileW - 8, y + 8, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(34,197,94,' + (0.3 + Math.sin(time * 2 + tile.phase) * 0.2) + ')';
+        ctx.fill();
+      });
+
+      // Central glow pulse
+      var pulseR = 80 + Math.sin(time * 0.5) * 20;
+      var pulseGrad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, pulseR);
+      pulseGrad.addColorStop(0, 'rgba(34,197,94,0.06)');
+      pulseGrad.addColorStop(1, 'rgba(34,197,94,0)');
+      ctx.fillStyle = pulseGrad;
+      ctx.beginPath();
+      ctx.arc(w/2, h/2, pulseR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.arcTo(x + w, y, x + w, y + r, r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+      ctx.lineTo(x + r, y + h);
+      ctx.arcTo(x, y + h, x, y + h - r, r);
+      ctx.lineTo(x, y + r);
+      ctx.arcTo(x, y, x + r, y, r);
+      ctx.closePath();
+    }
+
+    requestAnimationFrame(animate);
+  })();
+  </script>
+
+  <!-- Camera card scan animations -->
+  <script>
+  // Add animated scan lines to the camera grid cards
+  (function() {
+    var cards = document.querySelectorAll('.cam-scan');
+    cards.forEach(function(scan, i) {
+      // Animate via CSS by adding a moving gradient
+      scan.style.position = 'relative';
+      var line = document.createElement('div');
+      line.style.cssText = 'position:absolute;left:0;right:0;height:2px;background:rgba(34,197,94,0.4);top:0;animation:camScan ' + (3 + i * 0.5) + 's linear infinite;animation-delay:' + (i * 0.3) + 's';
+      scan.appendChild(line);
+    });
+    if (!document.getElementById('cam-scan-style')) {
+      var style = document.createElement('style');
+      style.id = 'cam-scan-style';
+      style.textContent = '@keyframes camScan { 0% { top:0%; opacity:0; } 10%{opacity:1} 90%{opacity:1} 100% { top:100%; opacity:0; } }';
+      document.head.appendChild(style);
+    }
+  })();
+  </script>
+
+  <!-- Scroll reveal -->
+  <script>
+  var revealObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(function(el) { revealObs.observe(el); });
+  </script>
+</body>
+</html>
