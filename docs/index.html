@@ -929,9 +929,8 @@
       blip.userData.ripplePool.push(ripple);
     }
 
-    /* ── Cloud escape particles (status pings leaving the dome) ── */
-    var escapeParticles = [];
-    var cloudY = 2.5;
+    /* ── Rocket launch system (status ping leaving the dome) ── */
+    var cloudY = 2.8;
 
     // Cloud node (above the dome)
     var cloudGeo = new THREE.SphereGeometry(0.15, 12, 12);
@@ -940,25 +939,149 @@
     cloudMesh.position.set(0, cloudY, 0);
     scene.add(cloudMesh);
 
-    var escapeTimer = 0;
+    /* ── Dome hatch (two sliding panels at the top of the dome shell) ── */
+    var hatchGroup = new THREE.Group();
+    hatchGroup.position.set(0, 0, 0);
+    scene.add(hatchGroup);
 
-    function spawnEscapeParticle() {
+    // Hatch frame ring (the opening, always visible)
+    var hatchRingGeo = new THREE.TorusGeometry(0.3, 0.025, 8, 32);
+    var hatchRingMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.25 });
+    var hatchRing = new THREE.Mesh(hatchRingGeo, hatchRingMat);
+    hatchRing.rotation.x = -Math.PI / 2;
+    hatchRing.position.y = 1.6; // at the top of the dome
+    hatchGroup.add(hatchRing);
+
+    // Two hatch doors (semicircles that slide apart)
+    function makeHatchDoor(side) {
+      var shape = new THREE.Shape();
+      shape.absarc(0, 0, 0.28, 0, Math.PI, false);
+      shape.lineTo(-0.28, 0);
+      shape.closePath();
+      var geo = new THREE.ShapeGeometry(shape);
+      var mat = new THREE.MeshStandardMaterial({
+        color: 0x1a1d28, metalness: 0.8, roughness: 0.3,
+        emissive: 0xa855f7, emissiveIntensity: 0.1,
+        transparent: true, opacity: 0.5,
+        side: THREE.DoubleSide
+      });
+      var door = new THREE.Mesh(geo, mat);
+      door.rotation.x = -Math.PI / 2;
+      door.position.y = 1.61;
+      // side: -1 = left door, 1 = right door
+      door.userData = { side: side, baseX: 0, openX: side * 0.32 };
+      return door;
+    }
+
+    var hatchDoorL = makeHatchDoor(-1);
+    var hatchDoorR = makeHatchDoor(1);
+    // Rotate the left door 180 so it covers the other half
+    hatchDoorL.rotation.z = Math.PI;
+    hatchGroup.add(hatchDoorL);
+    hatchGroup.add(hatchDoorR);
+
+    // Hatch state: 0 = closed, 1 = open
+    var hatchOpenness = 0;
+    var hatchTarget = 0;
+
+    function updateHatch(openness) {
+      hatchDoorL.position.x = hatchDoorL.userData.openX * openness;
+      hatchDoorR.position.x = hatchDoorR.userData.openX * openness;
+      // Doors fade slightly when open
+      hatchDoorL.material.opacity = 0.5 - openness * 0.3;
+      hatchDoorR.material.opacity = 0.5 - openness * 0.3;
+      // Ring brightens when open
+      hatchRingMat.opacity = 0.2 + openness * 0.4;
+    }
+
+    /* ── Rocket ship ── */
+    var rocketGroup = new THREE.Group();
+    rocketGroup.visible = false;
+    scene.add(rocketGroup);
+
+    // Rocket body (cylinder)
+    var rBodyGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.18, 12);
+    var rBodyMat = new THREE.MeshStandardMaterial({
+      color: 0xe0e0e8, metalness: 0.6, roughness: 0.3,
+      emissive: 0x222233, emissiveIntensity: 0.3
+    });
+    var rBody = new THREE.Mesh(rBodyGeo, rBodyMat);
+    rocketGroup.add(rBody);
+
+    // Nose cone
+    var rNoseGeo = new THREE.ConeGeometry(0.04, 0.08, 12);
+    var rNoseMat = new THREE.MeshStandardMaterial({
+      color: 0xa855f7, metalness: 0.5, roughness: 0.3,
+      emissive: 0xa855f7, emissiveIntensity: 0.4
+    });
+    var rNose = new THREE.Mesh(rNoseGeo, rNoseMat);
+    rNose.position.y = 0.13;
+    rocketGroup.add(rNose);
+
+    // Fins (3 small triangles)
+    for (var fi = 0; fi < 3; fi++) {
+      var finShape = new THREE.Shape();
+      finShape.moveTo(0, 0);
+      finShape.lineTo(0.03, -0.04);
+      finShape.lineTo(0, -0.06);
+      finShape.closePath();
+      var finGeo = new THREE.ShapeGeometry(finShape);
+      var finMat = new THREE.MeshStandardMaterial({
+        color: 0xa855f7, metalness: 0.5, roughness: 0.3,
+        emissive: 0xa855f7, emissiveIntensity: 0.3,
+        side: THREE.DoubleSide
+      });
+      var fin = new THREE.Mesh(finGeo, finMat);
+      var fAngle = (fi / 3) * Math.PI * 2;
+      fin.position.set(Math.cos(fAngle) * 0.04, -0.09, Math.sin(fAngle) * 0.04);
+      fin.rotation.y = fAngle + Math.PI / 2;
+      rocketGroup.add(fin);
+    }
+
+    // Flame trail (a cone that flickers)
+    var flameGeo = new THREE.ConeGeometry(0.03, 0.1, 8);
+    var flameMat = new THREE.MeshBasicMaterial({
+      color: 0xff8844, transparent: true, opacity: 0
+    });
+    var flame = new THREE.Mesh(flameGeo, flameMat);
+    flame.position.y = -0.14;
+    flame.rotation.x = Math.PI; // point downward
+    rocketGroup.add(flame);
+
+    // Flame inner core (brighter)
+    var flameCoreGeo = new THREE.ConeGeometry(0.015, 0.06, 6);
+    var flameCoreMat = new THREE.MeshBasicMaterial({
+      color: 0xffee88, transparent: true, opacity: 0
+    });
+    var flameCore = new THREE.Mesh(flameCoreGeo, flameCoreMat);
+    flameCore.position.y = -0.12;
+    flameCore.rotation.x = Math.PI;
+    rocketGroup.add(flameCore);
+
+    /* ── Rocket launch state machine ── */
+    // Phases: idle → hatch_opening → launching → flying → fading → done
+    var rocketState = 'idle';
+    var rocketTimer = 0;
+    var ROCKET_INTERVAL = 8.0; // seconds between launches
+    var rocketStartTime = 0;
+    var rocketStartPos = new THREE.Vector3();
+    var rocketTargetPos = new THREE.Vector3(0, cloudY, 0);
+
+    // Flame trail particles (left behind as rocket flies)
+    var flameTrails = [];
+
+    function launchRocket() {
       // Pick a random live blip as the source
       var liveBlips = blips.filter(function(b) { return b.userData.cam.state !== 'offline'; });
       if (!liveBlips.length) return;
       var src = liveBlips[Math.floor(Math.random() * liveBlips.length)];
-
-      var geo = new THREE.SphereGeometry(0.03, 8, 8);
-      var mat = new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.8 });
-      var p = new THREE.Mesh(geo, mat);
-      p.position.copy(src.position);
-      p.userData = {
-        life: 0, maxLife: 1.8,
-        startX: src.position.x, startY: src.position.y, startZ: src.position.z,
-        targetX: 0, targetY: cloudY, targetZ: 0
-      };
-      scene.add(p);
-      escapeParticles.push(p);
+      rocketStartPos.copy(src.position);
+      rocketStartPos.y = 0.15;
+      rocketGroup.position.copy(rocketStartPos);
+      rocketGroup.visible = true;
+      rocketState = 'hatch_opening';
+      rocketTimer = 0;
+      hatchTarget = 1;
     }
 
     /* ── Labels ── */
@@ -1089,33 +1212,139 @@
         }
       }
 
-      /* ── Cloud escape particles ── */
-      escapeTimer += dt;
-      if (escapeTimer > 3.0) {
-        escapeTimer = 0;
-        spawnEscapeParticle();
+      /* ── Rocket launch state machine ── */
+      rocketTimer += dt;
+
+      // Smooth hatch open/close
+      hatchOpenness += (hatchTarget - hatchOpenness) * (1 - Math.exp(-dt * 4));
+      updateHatch(hatchOpenness);
+
+      if (rocketState === 'idle' && rocketTimer > ROCKET_INTERVAL) {
+        launchRocket();
+        rocketTimer = 0;
       }
 
-      for (var i = escapeParticles.length - 1; i >= 0; i--) {
-        var ep = escapeParticles[i];
-        ep.userData.life += dt;
-        var ep_p = ep.userData.life / ep.userData.maxLife;
+      if (rocketState === 'hatch_opening') {
+        // Wait for hatch to open, then launch
+        if (hatchOpenness > 0.85) {
+          rocketState = 'launching';
+          rocketTimer = 0;
+          // Ignite flame
+          flameMat.opacity = 0.8;
+          flameCoreMat.opacity = 0.9;
+        }
+      }
 
-        // Arc from blip to cloud node
-        ep.position.x = ep.userData.startX + (ep.userData.targetX - ep.userData.startX) * ep_p;
-        ep.position.z = ep.userData.startZ + (ep.userData.targetZ - ep.userData.startZ) * ep_p;
-        // Parabolic arc upward
-        var arcHeight = 0.5;
-        ep.position.y = ep.userData.startY + (ep.userData.targetY - ep.userData.startY) * ep_p + Math.sin(ep_p * Math.PI) * arcHeight;
+      if (rocketState === 'launching') {
+        // Rocket rises from blip to the hatch opening (center top of dome)
+        var launchP = Math.min(rocketTimer / 0.8, 1);
+        // Move toward center (0, ?, 0) while rising
+        var targetX_hatch = 0;
+        var targetZ_hatch = 0;
+        var targetY_hatch = 1.5; // just below the hatch
+        rocketGroup.position.x = rocketStartPos.x + (targetX_hatch - rocketStartPos.x) * launchP;
+        rocketGroup.position.z = rocketStartPos.z + (targetZ_hatch - rocketStartPos.z) * launchP;
+        rocketGroup.position.y = rocketStartPos.y + (targetY_hatch - rocketStartPos.y) * launchP;
 
-        // Fade out in last 30%
-        if (ep_p > 0.7) {
-          ep.material.opacity = 0.8 * (1 - (ep_p - 0.7) / 0.3);
+        // Flame flicker
+        flame.scale.y = 1 + Math.sin(t * 30) * 0.3;
+        flameCore.scale.y = 1 + Math.sin(t * 35) * 0.2;
+
+        // Spawn flame trail particles
+        if (Math.random() > 0.3) {
+          var ftGeo = new THREE.SphereGeometry(0.015 + Math.random() * 0.01, 6, 6);
+          var ftMat = new THREE.MeshBasicMaterial({
+            color: Math.random() > 0.5 ? 0xff8844 : 0xffee88,
+            transparent: true, opacity: 0.7
+          });
+          var ft = new THREE.Mesh(ftGeo, ftMat);
+          ft.position.copy(rocketGroup.position);
+          ft.position.y -= 0.15;
+          ft.position.x += (Math.random() - 0.5) * 0.03;
+          ft.position.z += (Math.random() - 0.5) * 0.03;
+          ft.userData = { life: 0, maxLife: 0.6, vy: -0.3 - Math.random() * 0.2 };
+          scene.add(ft);
+          flameTrails.push(ft);
         }
 
-        if (ep.userData.life > ep.userData.maxLife) {
-          scene.remove(ep);
-          escapeParticles.splice(i, 1);
+        if (launchP >= 1) {
+          rocketState = 'flying';
+          rocketTimer = 0;
+        }
+      }
+
+      if (rocketState === 'flying') {
+        // Rocket flies up through the hatch to the cloud
+        var flyP = Math.min(rocketTimer / 1.2, 1);
+        rocketGroup.position.y = 1.5 + (cloudY - 1.5) * flyP;
+        // Slight wobble
+        rocketGroup.position.x = Math.sin(t * 8) * 0.04;
+        rocketGroup.rotation.z = Math.sin(t * 6) * 0.08;
+
+        // Flame stays lit
+        flame.scale.y = 1 + Math.sin(t * 30) * 0.3;
+        flameCore.scale.y = 1 + Math.sin(t * 35) * 0.2;
+
+        // Spawn flame trail
+        if (Math.random() > 0.4) {
+          var ftGeo = new THREE.SphereGeometry(0.012 + Math.random() * 0.008, 6, 6);
+          var ftMat = new THREE.MeshBasicMaterial({
+            color: Math.random() > 0.5 ? 0xff8844 : 0xffee88,
+            transparent: true, opacity: 0.6
+          });
+          var ft = new THREE.Mesh(ftGeo, ftMat);
+          ft.position.copy(rocketGroup.position);
+          ft.position.y -= 0.15;
+          ft.userData = { life: 0, maxLife: 0.5, vy: -0.2 };
+          scene.add(ft);
+          flameTrails.push(ft);
+        }
+
+        // Close hatch once rocket is through
+        if (flyP > 0.3) {
+          hatchTarget = 0;
+        }
+
+        if (flyP >= 1) {
+          rocketState = 'fading';
+          rocketTimer = 0;
+        }
+      }
+
+      if (rocketState === 'fading') {
+        // Rocket fades out at the cloud node
+        var fadeP = Math.min(rocketTimer / 0.5, 1);
+        rBodyMat.transparent = true;
+        rBodyMat.opacity = 1 - fadeP;
+        rNoseMat.opacity = 1 - fadeP;
+        flameMat.opacity = 0.8 * (1 - fadeP);
+        flameCoreMat.opacity = 0.9 * (1 - fadeP);
+        // Scale down slightly
+        rocketGroup.scale.setScalar(1 - fadeP * 0.3);
+
+        if (fadeP >= 1) {
+          rocketGroup.visible = false;
+          rocketGroup.scale.setScalar(1);
+          rBodyMat.opacity = 1;
+          rNoseMat.opacity = 1;
+          flameMat.opacity = 0;
+          flameCoreMat.opacity = 0;
+          rocketState = 'idle';
+          rocketTimer = 0;
+        }
+      }
+
+      /* ── Flame trail particles ── */
+      for (var i = flameTrails.length - 1; i >= 0; i--) {
+        var ft = flameTrails[i];
+        ft.userData.life += dt;
+        var ftP = ft.userData.life / ft.userData.maxLife;
+        ft.position.y += ft.userData.vy * dt;
+        ft.material.opacity = 0.7 * (1 - ftP);
+        ft.scale.setScalar(1 + ftP * 0.5);
+        if (ft.userData.life > ft.userData.maxLife) {
+          scene.remove(ft);
+          flameTrails.splice(i, 1);
         }
       }
 
