@@ -231,6 +231,17 @@
     /* ── Scroll reveal ── */
     .reveal { opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease; }
     .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── Star CTA ── */
+    .star-cta { display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 999px; background: rgba(10,10,15,0.6); backdrop-filter: blur(8px); border: 1px solid var(--border-2); font-size: 14px; font-weight: 600; color: var(--text); transition: all .2s; text-decoration: none; }
+    .star-cta:hover { border-color: var(--green); background: rgba(34,197,94,0.08); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(34,197,94,0.15); }
+    .star-cta .star-ico { font-size: 16px; filter: drop-shadow(0 0 4px rgba(255,215,0,0.5)); transition: transform .3s; }
+    .star-cta:hover .star-ico { transform: scale(1.2) rotate(72deg); }
+    .star-cta .star-count { font-family: var(--mono); font-size: 13px; color: var(--text-2); font-weight: 500; }
+    .hero-meta .star-link { color: var(--text-2); transition: color .15s; }
+    .hero-meta .star-link:hover { color: var(--green); }
+    .hero-meta .star-link .star-ico { font-size: 11px; }
+    .footer-star { display: flex; justify-content: center; margin-bottom: 32px; }
   </style>
 </head>
 <body>
@@ -260,7 +271,7 @@
         <a href="https://opensentry-command.fly.dev/sign-up" class="btn btn-green">Get Started Free</a>
         <a href="https://opensentry-command.fly.dev" class="btn btn-ghost">View Live App</a>
       </div>
-      <div class="hero-meta">AES-256 encrypted · Sub-10s latency · No inbound ports · AGPL-3.0</div>
+      <div class="hero-meta">AES-256 encrypted · Sub-10s latency · No inbound ports · AGPL-3.0 · <a href="https://github.com/SourceBox-LLC/Sentinel-Command" class="star-link" target="_blank" rel="noopener"><span class="star-ico">⭐</span> Star us on GitHub</a></div>
     </div>
     <div class="scroll-hint">scroll<div class="line"></div></div>
   </section>
@@ -521,6 +532,13 @@
         <div class="fcol"><h5>Resources</h5><ul><li><a href="https://opensentry-command.fly.dev">Live App</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command">Command Center</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode">Camera Node</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-HomeAssistant">Home Assistant</a></li></ul></div>
         <div class="fcol"><h5>Community</h5><ul><li><a href="https://opensentry-command.fly.dev/security">Security</a></li><li><a href="https://opensentry-command.fly.dev/pricing">Pricing</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command/issues">Report a bug</a></li><li><a href="https://opensentry-command.fly.dev/legal/terms">Terms</a></li></ul></div>
       </div>
+      <div class="footer-star reveal">
+        <a href="https://github.com/SourceBox-LLC/Sentinel-Command" class="star-cta" target="_blank" rel="noopener">
+          <span class="star-ico">⭐</span>
+          Star Sentinel on GitHub
+          <span class="star-count" id="star-count">…</span>
+        </a>
+      </div>
       <div class="fbottom">
         <span>© 2026 SourceBox LLC · AGPL-3.0</span>
         <div class="pills"><span class="pill">Open Source</span><span class="pill">Encrypted</span><span class="pill">Private</span></div>
@@ -691,6 +709,21 @@
     });
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(function(el) { revealObs.observe(el); });
+  </script>
+
+  <!-- Live GitHub star count -->
+  <script>
+  (function() {
+    var el = document.getElementById('star-count');
+    if (!el) return;
+    fetch('https://api.github.com/repos/SourceBox-LLC/Sentinel-Command')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        var stars = d.stargazers_count || 0;
+        el.textContent = stars > 0 ? '· ' + stars + (stars === 1 ? ' star' : ' stars') : 'Be the first to star';
+      })
+      .catch(function() { el.textContent = 'Star us'; });
+  })();
   </script>
 </body>
 </html>
