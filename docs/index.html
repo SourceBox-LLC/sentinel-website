@@ -270,7 +270,7 @@
     <div class="wrap">
       <div class="reveal"><span class="label">Live Dashboard</span></div>
       <h2 class="h2 reveal" style="margin-top: 4px;">Every camera,<br><span class="grad">one dashboard.</span></h2>
-      <p class="sub reveal">Live HLS streaming with sub-10-second latency. CloudNode uploads segments in real-time — the cloud holds only a rolling 60-second buffer in memory.</p>
+      <p class="sub reveal">Live HLS streaming with sub-10-second latency. Camera Node uploads segments in real-time — the cloud holds only a rolling 60-second buffer in memory.</p>
 
       <div class="cam-grid reveal" id="camGrid">
         <!-- Camera cards with animated scan lines -->
@@ -342,7 +342,7 @@
         <div class="feat a reveal">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7zM14 5H3a2 2 0 00-2 2v10a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2z"/></svg></div>
           <h3>Real-time streaming</h3>
-          <p>HLS streaming with sub-10-second latency. CloudNode uploads segments in real-time for near-live viewing.</p>
+          <p>HLS streaming with sub-10-second latency. Camera Node uploads segments in real-time for near-live viewing.</p>
         </div>
         <div class="feat p reveal">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
@@ -365,13 +365,13 @@
         </div>
         <div class="reveal">
           <span class="label">Privacy by design</span>
-          <h2 class="h2">Your recordings never<br>leave your <span class="grad">CloudNode.</span></h2>
-          <p class="sub">Cloud security cameras stream every frame to a vendor's servers. Your CloudNode is different — it sits on your network, records to its own encrypted disk, and runs motion analysis locally. The cloud only ever holds a rolling 60-second live buffer in memory.</p>
+          <h2 class="h2">Your recordings never<br>leave your <span class="grad">Camera Node.</span></h2>
+          <p class="sub">Cloud security cameras stream every frame to a vendor's servers. Your Camera Node is different — it sits on your network, records to its own encrypted disk, and runs motion analysis locally. The cloud only ever holds a rolling 60-second live buffer in memory.</p>
           <ul class="privacy-pts">
-            <li><span class="chk">✓</span><div><strong>Motion detection runs locally</strong><span>FFmpeg threshold detection on your CloudNode. Pixel math, not ML.</span></div></li>
+            <li><span class="chk">✓</span><div><strong>Motion detection runs locally</strong><span>FFmpeg threshold detection on your Camera Node. Pixel math, not ML.</span></div></li>
             <li><span class="chk">✓</span><div><strong>Recordings are encrypted at rest</strong><span><code>AES-256-GCM</code> with a key derived from your device's OS machine ID.</span></div></li>
             <li><span class="chk">✓</span><div><strong>No analytics, no ad networks, no data brokers</strong><span>Verifiable in our source with a single grep.</span></div></li>
-            <li><span class="chk">✓</span><div><strong>We don't hold your video</strong><span>Recordings live on your CloudNode, not our cloud. If law enforcement asks for footage, they have to ask you.</span></div></li>
+            <li><span class="chk">✓</span><div><strong>We don't hold your video</strong><span>Recordings live on your Camera Node, not our cloud. If law enforcement asks for footage, they have to ask you.</span></div></li>
           </ul>
         </div>
       </div>
@@ -383,13 +383,13 @@
     <div class="wrap">
       <div class="reveal"><span class="label">Architecture</span></div>
       <h2 class="h2 reveal" style="margin-top: 4px;">Two components.<br><span class="grad">Zero inbound ports.</span></h2>
-      <p class="sub reveal">CloudNode at your premises. Command Center in the cloud. CloudNode pushes out — no router config, no exposed ports.</p>
+      <p class="sub reveal">Camera Node at your premises. Command Center in the cloud. Camera Node pushes out — no router config, no exposed ports.</p>
 
       <div class="arch reveal">
         <div class="arch-node">
           <span class="arch-emoji">📹</span>
           <div class="arch-info">
-            <h3>CloudNode — your premises</h3>
+            <h3>Camera Node — your premises</h3>
             <p>Runs on any device with a USB camera. Captures video, generates HLS segments, pushes them to Command Center over HTTPS.</p>
             <div class="arch-tags"><span>USB Camera</span><span>FFmpeg</span><span>HLS</span><span>Win · Linux · macOS</span></div>
           </div>
@@ -433,7 +433,7 @@
         <div class="step">
           <div class="step-num">2</div>
           <div class="step-body">
-            <h3>Install CloudNode</h3>
+            <h3>Install Camera Node</h3>
             <p>Linux/macOS: <code>curl -fsSL https://opensentry-command.fly.dev/install.sh | bash</code></p>
             <p style="margin-top:4px">Windows: <a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode/releases/latest">download the MSI</a></p>
           </div>
@@ -442,14 +442,14 @@
           <div class="step-num">3</div>
           <div class="step-body">
             <h3>Connect your USB camera</h3>
-            <p>CloudNode auto-detects connected USB cameras. No manual configuration needed.</p>
+            <p>Camera Node auto-detects connected USB cameras. No manual configuration needed.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num">4</div>
           <div class="step-body">
             <h3>Enter your API key</h3>
-            <p>Generate an API key in Command Center settings, enter it during CloudNode setup. Your camera appears instantly.</p>
+            <p>Generate an API key in Command Center settings, enter it during Camera Node setup. Your camera appears instantly.</p>
           </div>
         </div>
       </div>
@@ -504,7 +504,7 @@
       <p>Cloud-hosted, globally accessible, and free to start.</p>
       <div class="hero-ctas">
         <a href="https://opensentry-command.fly.dev/sign-up" class="btn btn-green">Get Started Free</a>
-        <a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode" class="btn btn-ghost">Get CloudNode</a>
+        <a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode" class="btn btn-ghost">Get Camera Node</a>
       </div>
     </div>
   </section>
@@ -518,7 +518,7 @@
           <p>A private security camera system. Cloud-hosted surveillance where your footage never leaves your network for AI. Open source, encrypted at rest, multi-tenant from day one.</p>
         </div>
         <div class="fcol"><h5>Product</h5><ul><li><a href="#features">Features</a></li><li><a href="#privacy">Privacy</a></li><li><a href="#architecture">Architecture</a></li><li><a href="#mcp">MCP</a></li></ul></div>
-        <div class="fcol"><h5>Resources</h5><ul><li><a href="https://opensentry-command.fly.dev">Live App</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command">Command Center</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode">CloudNode</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-HomeAssistant">Home Assistant</a></li></ul></div>
+        <div class="fcol"><h5>Resources</h5><ul><li><a href="https://opensentry-command.fly.dev">Live App</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command">Command Center</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode">Camera Node</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-HomeAssistant">Home Assistant</a></li></ul></div>
         <div class="fcol"><h5>Community</h5><ul><li><a href="https://opensentry-command.fly.dev/security">Security</a></li><li><a href="https://opensentry-command.fly.dev/pricing">Pricing</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command/issues">Report a bug</a></li><li><a href="https://opensentry-command.fly.dev/legal/terms">Terms</a></li></ul></div>
       </div>
       <div class="fbottom">
