@@ -723,7 +723,7 @@
   })();
   </script>
 
-  <!-- Privacy vault: 3D encrypted vault orbit animation (Three.js) -->
+  <!-- Privacy lens: 3D camera lens iris animation (Three.js) -->
   <script type="module">
   import * as THREE from 'three';
 
@@ -731,7 +731,7 @@
     var canvas = document.getElementById('privacy-canvas');
     if (!canvas) return;
 
-    /* ── Scene setup ── */
+    /* ── Scene ── */
     var scene = new THREE.Scene();
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var W = 420, H = 420;
@@ -741,142 +741,249 @@
     renderer.setSize(W, H, false);
     renderer.setClearColor(0x000000, 0);
 
-    var camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
-    camera.position.set(0, 1.5, 6);
+    var camera = new THREE.PerspectiveCamera(35, W / H, 0.1, 100);
+    camera.position.set(0, 0.5, 5.5);
     camera.lookAt(0, 0, 0);
 
     /* ── Lighting ── */
-    scene.add(new THREE.AmbientLight(0x1a1a2a, 0.6));
-    var greenLight = new THREE.PointLight(0x22c55e, 2.5, 15);
-    greenLight.position.set(2, 3, 2);
-    greenLight.decay = 0;
-    scene.add(greenLight);
-    var rimLight = new THREE.PointLight(0xa855f7, 1.2, 15);
-    rimLight.position.set(-3, -1, -2);
+    scene.add(new THREE.AmbientLight(0x1a1a2a, 0.5));
+    var keyLight = new THREE.PointLight(0x22c55e, 3, 20);
+    keyLight.position.set(2, 3, 3);
+    keyLight.decay = 0;
+    scene.add(keyLight);
+    var fillLight = new THREE.PointLight(0x3b82f6, 1.5, 20);
+    fillLight.position.set(-3, 1, 2);
+    fillLight.decay = 0;
+    scene.add(fillLight);
+    var rimLight = new THREE.PointLight(0xa855f7, 1.2, 20);
+    rimLight.position.set(0, -2, -3);
     rimLight.decay = 0;
     scene.add(rimLight);
 
-    /* ── Central storage cylinder (the "vault") ── */
-    var vaultGroup = new THREE.Group();
+    /* ── Lens assembly group ── */
+    var lensGroup = new THREE.Group();
+    scene.add(lensGroup);
 
-    // Main cylinder body
-    var cylGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.9, 32, 1, false);
-    var cylMat = new THREE.MeshStandardMaterial({
-      color: 0x0f1119, metalness: 0.85, roughness: 0.25,
-      emissive: 0x0a1a0a, emissiveIntensity: 0.4
+    /* ── Outer lens barrel ── */
+    var barrelGeo = new THREE.CylinderGeometry(1.1, 1.15, 0.5, 64, 1, false);
+    var barrelMat = new THREE.MeshStandardMaterial({
+      color: 0x1a1d28, metalness: 0.9, roughness: 0.2,
+      emissive: 0x0a0a0f, emissiveIntensity: 0.3
     });
-    var cylinder = new THREE.Mesh(cylGeo, cylMat);
-    vaultGroup.add(cylinder);
+    var barrel = new THREE.Mesh(barrelGeo, barrelMat);
+    barrel.rotation.x = Math.PI / 2;
+    lensGroup.add(barrel);
 
-    // Top/bottom ring rims (glowing green)
-    var ringGeo = new THREE.TorusGeometry(0.72, 0.04, 8, 40);
-    var ringMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
-    var topRing = new THREE.Mesh(ringGeo, ringMat);
-    topRing.rotation.x = Math.PI / 2;
-    topRing.position.y = 0.45;
-    vaultGroup.add(topRing);
-    var botRing = new THREE.Mesh(ringGeo, ringMat);
-    botRing.rotation.x = Math.PI / 2;
-    botRing.position.y = -0.45;
-    vaultGroup.add(botRing);
+    /* ── Barrel rim (front, glowing green) ── */
+    var rimGeo = new THREE.TorusGeometry(1.12, 0.05, 12, 64);
+    var rimMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
+    var frontRim = new THREE.Mesh(rimGeo, rimMat);
+    frontRim.position.z = 0.25;
+    lensGroup.add(frontRim);
+    var backRim = new THREE.Mesh(rimGeo, new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.5 }));
+    backRim.position.z = -0.25;
+    lensGroup.add(backRim);
 
-    // Inner glow core
-    var glowGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.88, 16, 1, true);
-    var glowMat = new THREE.MeshBasicMaterial({
-      color: 0x22c55e, transparent: true, opacity: 0.12, side: THREE.BackSide
+    /* ── Glass element (the lens itself) ── */
+    var glassGeo = new THREE.CircleGeometry(1.0, 64);
+    var glassMat = new THREE.MeshStandardMaterial({
+      color: 0x0a0f18, metalness: 0.3, roughness: 0.05,
+      transparent: true, opacity: 0.35,
+      emissive: 0x0a1a0a, emissiveIntensity: 0.3,
+      side: THREE.DoubleSide
     });
-    vaultGroup.add(new THREE.Mesh(glowGeo, glowMat));
+    var glass = new THREE.Mesh(glassGeo, glassMat);
+    glass.position.z = 0.15;
+    lensGroup.add(glass);
 
-    scene.add(vaultGroup);
+    /* ── Inner glass glow (behind iris — shows when iris is open) ── */
+    var innerGlowGeo = new THREE.CircleGeometry(0.95, 64);
+    var innerGlowMat = new THREE.MeshBasicMaterial({
+      color: 0x22c55e, transparent: true, opacity: 0.08,
+      side: THREE.DoubleSide
+    });
+    var innerGlow = new THREE.Mesh(innerGlowGeo, innerGlowMat);
+    innerGlow.position.z = 0.1;
+    lensGroup.add(innerGlow);
 
-    /* ── Orbiting locked frames (encrypted recordings) ── */
-    var lockedFrames = [];
-    var MAX_LOCKED = 40;
-    var orbitGroup = new THREE.Group();
-    scene.add(orbitGroup);
+    /* ── Iris blades (diaphragm) ── */
+    var NUM_BLADES = 8;
+    var blades = [];
+    var irisGroup = new THREE.Group();
+    irisGroup.position.z = 0.18;
+    lensGroup.add(irisGroup);
 
-    function createLockedFrame() {
-      var geo = new THREE.BoxGeometry(0.12, 0.08, 0.02);
-      var mat = new THREE.MeshStandardMaterial({
-        color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 0.6,
-        metalness: 0.6, roughness: 0.3, transparent: true, opacity: 0.9
+    for (var i = 0; i < NUM_BLADES; i++) {
+      var bladeShape = new THREE.Shape();
+      bladeShape.moveTo(0, 0);
+      bladeShape.lineTo(0.9, -0.15);
+      bladeShape.lineTo(0.9, 0.15);
+      bladeShape.lineTo(0, 0);
+
+      var bladeGeo = new THREE.ShapeGeometry(bladeShape);
+      var bladeMat = new THREE.MeshStandardMaterial({
+        color: 0x12141c, metalness: 0.85, roughness: 0.15,
+        emissive: 0x080810, emissiveIntensity: 0.5,
+        side: THREE.DoubleSide
       });
-      var frame = new THREE.Mesh(geo, mat);
-      frame.userData = {
-        orbitR: 1.2 + Math.random() * 0.6,
-        orbitSpeed: 0.3 + Math.random() * 0.4,
-        orbitPhase: Math.random() * Math.PI * 2,
-        orbitTilt: (Math.random() - 0.5) * 0.8,
-        bobAmp: 0.1 + Math.random() * 0.15,
-        bobSpeed: 0.8 + Math.random() * 0.6,
-        bobPhase: Math.random() * Math.PI * 2,
-        life: 0,
-        maxLife: 8 + Math.random() * 6,
-        state: 'flying'  // flying → locking → orbiting → fading
-      };
-      // Start near the left (camera feed source)
-      frame.position.set(-3, (Math.random() - 0.5) * 0.5, (Math.random() - 0.5) * 0.5);
-      return frame;
+      var blade = new THREE.Mesh(bladeGeo, bladeMat);
+      var angle = (i / NUM_BLADES) * Math.PI * 2;
+      blade.rotation.z = angle;
+      blade.userData = { baseAngle: angle, index: i };
+      irisGroup.add(blade);
+      blades.push(blade);
     }
 
-    /* ── Incoming video frame particles (streaming from camera) ── */
-    var incomingFrames = [];
-    var MAX_INCOMING = 6;
+    /* ── Iris aperture state ── */
+    // 0 = fully closed, 1 = fully open
+    var irisOpen = 0;
+    var irisTarget = 1;
+    var IRIS_CYCLE = 6.0; // seconds per open/close cycle
+    var irisTimer = 0;
 
-    function spawnIncoming() {
-      var geo = new THREE.BoxGeometry(0.1, 0.06, 0.015);
+    function updateIris(openness) {
+      // openness 0→1 maps blade rotation from closed to open
+      // Each blade rotates around the center; the aperture opens
+      for (var i = 0; i < blades.length; i++) {
+        var b = blades[i];
+        var baseAngle = b.userData.baseAngle;
+        // Blades swing outward as iris opens
+        var swing = openness * (Math.PI / NUM_BLADES) * 0.85;
+        b.rotation.z = baseAngle + swing;
+        // Slight scale to simulate 3D curvature
+        b.scale.set(0.7 + openness * 0.4, 1, 1);
+      }
+      // Inner glow shows through when open
+      innerGlowMat.opacity = 0.04 + openness * 0.12;
+      // Glass becomes more transparent when open (you can see through)
+      glassMat.opacity = 0.2 + (1 - openness) * 0.25;
+      // Green rim brightens when iris closes (sealing)
+      rimMat.color.setHSL(0.33, 0.7, 0.35 + (1 - openness) * 0.2);
+    }
+
+    /* ── Video frames visible through the lens ── */
+    // When iris is open, frames are visible inside the lens
+    var lensFrames = [];
+    var MAX_LENS_FRAMES = 12;
+    var frameGroup = new THREE.Group();
+    frameGroup.position.z = 0.12;
+    lensGroup.add(frameGroup);
+
+    function spawnLensFrame() {
+      var geo = new THREE.PlaneGeometry(0.25, 0.16);
+      var hue = 0.55 + Math.random() * 0.1; // blue-ish
+      var color = new THREE.Color().setHSL(hue, 0.4, 0.3 + Math.random() * 0.2);
       var mat = new THREE.MeshBasicMaterial({
-        color: 0x3b82f6, transparent: true, opacity: 0.7
+        color: color, transparent: true, opacity: 0,
+        side: THREE.DoubleSide
       });
       var frame = new THREE.Mesh(geo, mat);
-      frame.position.set(-3.5, (Math.random() - 0.5) * 0.8, (Math.random() - 0.5) * 0.8);
-      frame.userData = {
-        speed: 1.2 + Math.random() * 0.6,
-        targetY: (Math.random() - 0.5) * 0.3
-      };
-      scene.add(frame);
-      incomingFrames.push(frame);
+      var angle = Math.random() * Math.PI * 2;
+      var r = 0.3 + Math.random() * 0.4;
+      frame.position.set(Math.cos(angle) * r, Math.sin(angle) * r, 0);
+      frame.rotation.z = Math.random() * 0.3;
+      frame.userData = { life: 0, maxLife: 2.5 + Math.random() * 1.5, baseAngle: angle, baseR: r };
+      frameGroup.add(frame);
+      lensFrames.push(frame);
     }
 
-    /* ── Cloud buffer particles (ephemeral, dissolving) ── */
-    var cloudParticles = [];
-    var cloudNode = { x: 3.2, y: 0, z: 0 };
+    /* ── Cloud escape particles (frames that slip through) ── */
+    var escapeParticles = [];
+    var cloudX = 2.8;
 
-    // Small cloud node representation
-    var cloudGeo = new THREE.SphereGeometry(0.15, 12, 12);
-    var cloudMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.3 });
+    // Cloud node
+    var cloudGeo = new THREE.SphereGeometry(0.12, 12, 12);
+    var cloudMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.25 });
     var cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
-    cloudMesh.position.set(cloudNode.x, cloudNode.y, cloudNode.z);
+    cloudMesh.position.set(cloudX, 0, 0);
     scene.add(cloudMesh);
 
-    function spawnCloudParticle() {
-      var geo = new THREE.BoxGeometry(0.06, 0.04, 0.01);
-      var mat = new THREE.MeshBasicMaterial({
-        color: 0xa855f7, transparent: true, opacity: 0.6
-      });
-      var p = new THREE.Mesh(geo, mat);
-      // Spawn near the vault (just left)
-      p.position.set(0.8, (Math.random() - 0.5) * 0.2, (Math.random() - 0.5) * 0.2);
-      p.userData = { life: 0, maxLife: 1.2 + Math.random() * 0.6 };
-      scene.add(p);
-      cloudParticles.push(p);
-    }
-
-    /* ── Connection lines (visual guides) ── */
-    var lineMat = new THREE.LineBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.15 });
-    var lineGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-3.5, 0, 0), new THREE.Vector3(-0.7, 0, 0)
-    ]);
-    scene.add(new THREE.Line(lineGeo, lineMat));
-
-    var cloudLineMat = new THREE.LineBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.08 });
+    // Connection line to cloud
+    var cloudLineMat = new THREE.LineBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.06 });
     var cloudLineGeo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(0.7, 0, 0), new THREE.Vector3(cloudNode.x, 0, 0)
+      new THREE.Vector3(1.2, 0, 0), new THREE.Vector3(cloudX, 0, 0)
     ]);
     scene.add(new THREE.Line(cloudLineGeo, cloudLineMat));
 
-    /* ── Labels (sprite text) ── */
-    function makeLabel(text, color) {
+    var escapeTimer = 0;
+
+    function spawnEscapeParticle() {
+      // A frame fragment escapes through the iris gap
+      var geo = new THREE.PlaneGeometry(0.08, 0.05);
+      var mat = new THREE.MeshBasicMaterial({
+        color: 0xa855f7, transparent: true, opacity: 0.8,
+        side: THREE.DoubleSide
+      });
+      var p = new THREE.Mesh(geo, mat);
+      p.position.set(0.8, (Math.random() - 0.5) * 0.3, 0.2);
+      p.userData = {
+        life: 0, maxLife: 1.5,
+        vx: 1.5 + Math.random() * 0.5,
+        vy: (Math.random() - 0.5) * 0.3,
+        spin: (Math.random() - 0.5) * 4,
+        // Shatter phase: after 0.8 of life, break apart
+        shattered: false,
+        shards: []
+      };
+      scene.add(p);
+      escapeParticles.push(p);
+    }
+
+    /* ── Encryption seal flash ── */
+    // When iris closes, a green shockwave ring expands
+    var sealRings = [];
+
+    function spawnSealRing() {
+      var geo = new THREE.RingGeometry(1.0, 1.05, 64);
+      var mat = new THREE.MeshBasicMaterial({
+        color: 0x22c55e, transparent: true, opacity: 0.8,
+        side: THREE.DoubleSide
+      });
+      var ring = new THREE.Mesh(geo, mat);
+      ring.position.z = 0.3;
+      ring.userData = { life: 0, maxLife: 1.2 };
+      lensGroup.add(ring);
+      sealRings.push(ring);
+    }
+
+    /* ── Hexagonal encryption pattern on glass ── */
+    var hexPattern = new THREE.Group();
+    hexPattern.position.z = 0.16;
+    lensGroup.add(hexPattern);
+    var hexCells = [];
+
+    var hexShape = new THREE.Shape();
+    var hs = 0.12;
+    for (var hi = 0; hi < 6; hi++) {
+      var ha = (hi / 6) * Math.PI * 2;
+      if (hi === 0) hexShape.moveTo(Math.cos(ha) * hs, Math.sin(ha) * hs);
+      else hexShape.lineTo(Math.cos(ha) * hs, Math.sin(ha) * hs);
+    }
+    hexShape.closePath();
+    var hexGeo = new THREE.ShapeGeometry(hexShape);
+
+    // Place hexagons in a grid pattern within the lens radius
+    var hexRange = 5;
+    for (var hx = -hexRange; hx <= hexRange; hx++) {
+      for (var hy = -hexRange; hy <= hexRange; hy++) {
+        var px = hx * hs * 1.5;
+        var py = hy * hs * Math.sqrt(3) + (hx % 2 ? hs * Math.sqrt(3) / 2 : 0);
+        var dist = Math.sqrt(px * px + py * py);
+        if (dist > 0.9) continue;
+        var hMat = new THREE.MeshBasicMaterial({
+          color: 0x22c55e, transparent: true, opacity: 0,
+          side: THREE.DoubleSide
+        });
+        var hex = new THREE.Mesh(hexGeo, hMat);
+        hex.position.set(px, py, 0);
+        hex.userData = { dist: dist, phase: Math.random() * Math.PI * 2, lit: false };
+        hexPattern.add(hex);
+        hexCells.push(hex);
+      }
+    }
+
+    /* ── Labels ── */
+    function makeLabel(text, color, scale) {
       var c = document.createElement('canvas');
       c.width = 256; c.height = 64;
       var ctx = c.getContext('2d');
@@ -887,23 +994,18 @@
       var tex = new THREE.CanvasTexture(c);
       var mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
       var spr = new THREE.Sprite(mat);
-      spr.scale.set(1.2, 0.3, 1);
+      spr.scale.set(scale || 1.2, (scale || 1.2) * 0.25, 1);
       return spr;
     }
 
-    var camLabel = makeLabel('CAMERA', '#3b82f6');
-    camLabel.position.set(-3.2, -0.8, 0);
-    camLabel.material.opacity = 0.5;
-    scene.add(camLabel);
+    var irisLabel = makeLabel('ENCRYPTED', '#22c55e', 1.4);
+    irisLabel.position.set(0, -1.6, 0);
+    irisLabel.material.opacity = 0;
+    scene.add(irisLabel);
 
-    var vaultLabel = makeLabel('AES-256', '#22c55e');
-    vaultLabel.position.set(0, -1.3, 0);
-    vaultLabel.material.opacity = 0.6;
-    scene.add(vaultLabel);
-
-    var cloudLabel = makeLabel('60s RAM', '#a855f7');
-    cloudLabel.position.set(cloudNode.x, -0.7, 0);
-    cloudLabel.material.opacity = 0.4;
+    var cloudLabel = makeLabel('60s BUFFER', '#a855f7', 1.0);
+    cloudLabel.position.set(cloudX, -0.6, 0);
+    cloudLabel.material.opacity = 0.3;
     scene.add(cloudLabel);
 
     /* ── Mouse parallax ── */
@@ -914,7 +1016,7 @@
       mouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
     });
 
-    /* ── Visibility (pause when offscreen) ── */
+    /* ── Visibility ── */
     var visible = true;
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (entries) {
@@ -924,9 +1026,8 @@
 
     /* ── Animation loop ── */
     var clock = new THREE.Clock();
-    var incomingTimer = 0;
-    var cloudTimer = 0;
-    var lockTimer = 0;
+    var frameSpawnTimer = 0;
+    var hexLitTimer = 0;
 
     function animate() {
       requestAnimationFrame(animate);
@@ -934,117 +1035,174 @@
       var dt = Math.min(clock.getDelta(), 0.05);
       var t = clock.elapsedTime;
 
-      // Smooth mouse parallax
-      smoothX += (mouseX - smoothX) * 0.04;
-      smoothY += (mouseY - smoothY) * 0.04;
-      vaultGroup.rotation.y = t * 0.15 + smoothX * 0.3;
-      vaultGroup.rotation.x = smoothY * 0.15;
+      /* ── Cinematic camera drift ── */
+      smoothX += (mouseX - smoothX) * 0.03;
+      smoothY += (mouseY - smoothY) * 0.03;
+      camera.position.x = Math.sin(t * 0.12) * 0.6 + smoothX * 0.5;
+      camera.position.y = 0.5 + Math.cos(t * 0.1) * 0.3 + smoothY * 0.3;
+      camera.lookAt(0, 0, 0);
 
-      // Vault core pulse
-      var pulse = 0.12 + Math.sin(t * 1.5) * 0.05;
-      glowMat.opacity = pulse;
+      /* ── Lens group subtle rotation ── */
+      lensGroup.rotation.z = Math.sin(t * 0.15) * 0.05;
+      lensGroup.rotation.x = Math.sin(t * 0.2) * 0.03;
 
-      // Ring pulse
-      ringMat.color.setHSL(0.33, 0.7, 0.45 + Math.sin(t * 2) * 0.1);
-
-      // Spawn incoming frames
-      incomingTimer += dt;
-      if (incomingTimer > 0.35 && incomingFrames.length < MAX_INCOMING) {
-        incomingTimer = 0;
-        spawnIncoming();
+      /* ── Iris cycle: open → close → open ── */
+      irisTimer += dt;
+      var cycleProgress = (irisTimer % IRIS_CYCLE) / IRIS_CYCLE;
+      // Smooth open/close with easing
+      // 0-0.35: open, 0.35-0.5: closing, 0.5-0.65: closed (seal), 0.65-0.8: opening, 0.8-1.0: open
+      var prevIris = irisOpen;
+      if (cycleProgress < 0.35) {
+        irisTarget = 1; // open
+      } else if (cycleProgress < 0.5) {
+        irisTarget = 0; // closing
+      } else if (cycleProgress < 0.65) {
+        irisTarget = 0; // closed (sealed)
+      } else if (cycleProgress < 0.8) {
+        irisTarget = 1; // opening
+      } else {
+        irisTarget = 1; // open
       }
+      // Smooth damped interpolation
+      irisOpen += (irisTarget - irisOpen) * (1 - Math.exp(-dt * 5));
+      updateIris(irisOpen);
 
-      // Animate incoming frames → fly toward vault
-      for (var i = incomingFrames.length - 1; i >= 0; i--) {
-        var f = incomingFrames[i];
-        var dx = -0.7 - f.position.x;
-        var dy = f.userData.targetY - f.position.y;
-        var dz = 0 - f.position.z;
-        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        f.position.x += dx * f.userData.speed * dt;
-        f.position.y += dy * f.userData.speed * dt;
-        f.position.z += dz * f.userData.speed * dt;
-        f.rotation.z += dt * 3;
-
-        // Reached vault → lock into orbit
-        if (dist < 0.25) {
-          scene.remove(f);
-          incomingFrames.splice(i, 1);
-          lockTimer += 1;
+      // Detect closing moment (iris transitions from open to closed) → spawn seal ring
+      if (prevIris > 0.3 && irisOpen < 0.15 && cycleProgress > 0.45 && cycleProgress < 0.55) {
+        spawnSealRing();
+        // Light up hex cells
+        for (var hi = 0; hi < hexCells.length; hi++) {
+          hexCells[hi].userData.lit = true;
+          hexCells[hi].userData.litTime = 0;
         }
       }
 
-      // Spawn locked frames when we have "locks" queued
-      if (lockTimer > 0 && lockedFrames.length < MAX_LOCKED) {
-        lockTimer -= 1;
-        var lf = createLockedFrame();
-        lf.userData.state = 'orbiting';
-        orbitGroup.add(lf);
-        lockedFrames.push(lf);
+      /* ── Encryption seal rings ── */
+      for (var i = sealRings.length - 1; i >= 0; i--) {
+        var sr = sealRings[i];
+        sr.userData.life += dt;
+        var p = sr.userData.life / sr.userData.maxLife;
+        var scale = 1 + p * 1.5;
+        sr.scale.set(scale, scale, 1);
+        sr.material.opacity = 0.8 * (1 - p) * (1 - p);
+        if (sr.userData.life > sr.userData.maxLife) {
+          lensGroup.remove(sr);
+          sealRings.splice(i, 1);
+        }
       }
 
-      // Animate locked orbiting frames
-      for (var i = lockedFrames.length - 1; i >= 0; i--) {
-        var lf = lockedFrames[i];
-        var ud = lf.userData;
-        ud.life += dt;
-
-        if (ud.state === 'orbiting') {
-          var angle = ud.orbitPhase + t * ud.orbitSpeed;
-          lf.position.x = Math.cos(angle) * ud.orbitR;
-          lf.position.z = Math.sin(angle) * ud.orbitR;
-          lf.position.y = Math.sin(t * ud.bobSpeed + ud.bobPhase) * ud.bobAmp + ud.orbitTilt;
-          lf.lookAt(0, lf.position.y * 0.5, 0);
-
-          // Fade out near end of life
-          if (ud.life > ud.maxLife - 1.5) {
-            lf.material.opacity = Math.max(0, (ud.maxLife - ud.life) / 1.5 * 0.9);
+      /* ── Hex encryption pattern ── */
+      hexLitTimer += dt;
+      for (var i = 0; i < hexCells.length; i++) {
+        var hc = hexCells[i];
+        if (hc.userData.lit) {
+          hc.userData.litTime = (hc.userData.litTime || 0) + dt;
+          // Light up from center outward
+          var delay = hc.userData.dist * 0.4;
+          if (hc.userData.litTime > delay) {
+            var litP = (hc.userData.litTime - delay) / 0.6;
+            hc.material.opacity = Math.max(0, 0.5 * (1 - litP));
           }
-
-          if (ud.life > ud.maxLife) {
-            orbitGroup.remove(lf);
-            lockedFrames.splice(i, 1);
+          if (hc.userData.litTime > 2.0) {
+            hc.userData.lit = false;
+            hc.material.opacity = 0;
           }
+        } else {
+          // Subtle ambient shimmer
+          hc.material.opacity = Math.max(hc.material.opacity, 0.02 + Math.sin(t * 0.8 + hc.userData.phase) * 0.015);
         }
       }
 
-      // Spawn cloud buffer particles (sparse — ephemeral)
-      cloudTimer += dt;
-      if (cloudTimer > 0.6 && cloudParticles.length < 4) {
-        cloudTimer = 0;
-        spawnCloudParticle();
+      /* ── Video frames visible through open iris ── */
+      frameSpawnTimer += dt;
+      if (frameSpawnTimer > 0.4 && lensFrames.length < MAX_LENS_FRAMES && irisOpen > 0.3) {
+        frameSpawnTimer = 0;
+        spawnLensFrame();
       }
 
-      // Animate cloud particles → drift to cloud node, fade fast
-      for (var i = cloudParticles.length - 1; i >= 0; i--) {
-        var p = cloudParticles[i];
-        p.userData.life += dt;
-        var progress = p.userData.life / p.userData.maxLife;
+      for (var i = lensFrames.length - 1; i >= 0; i--) {
+        var lf = lensFrames[i];
+        lf.userData.life += dt;
+        var lp = lf.userData.life / lf.userData.maxLife;
 
-        // Lerp from vault to cloud node
-        p.position.x = 0.8 + (cloudNode.x - 0.8) * progress;
-        p.position.y += (Math.random() - 0.5) * 0.01;
-        p.position.z += (Math.random() - 0.5) * 0.01;
-        p.material.opacity = 0.6 * (1 - progress) * (1 - progress);
+        // Visible based on how open the iris is
+        lf.material.opacity = irisOpen * 0.6 * (1 - lp * lp);
 
-        if (p.userData.life > p.userData.maxLife) {
-          scene.remove(p);
-          cloudParticles.splice(i, 1);
+        // Slowly drift/rotate inside the lens
+        var ang = lf.userData.baseAngle + t * 0.1;
+        var r = lf.userData.baseR * (1 - lp * 0.3);
+        lf.position.x = Math.cos(ang) * r;
+        lf.position.y = Math.sin(ang) * r;
+        lf.rotation.z += dt * 0.3;
+
+        // When iris closes, frames fade fast (sealed)
+        if (irisOpen < 0.2) {
+          lf.material.opacity *= 0.1;
+        }
+
+        if (lf.userData.life > lf.userData.maxLife) {
+          frameGroup.remove(lf);
+          lensFrames.splice(i, 1);
         }
       }
 
-      // Cloud node gentle pulse
-      cloudMat.opacity = 0.25 + Math.sin(t * 1.2) * 0.08;
+      /* ── Cloud escape particles ── */
+      escapeTimer += dt;
+      // Only escape when iris is partially open (a frame slips through the gap)
+      if (escapeTimer > 2.5 && irisOpen > 0.15 && irisOpen < 0.5) {
+        escapeTimer = 0;
+        spawnEscapeParticle();
+      }
 
-      // Labels fade based on visibility
-      camLabel.material.opacity = 0.4 + Math.sin(t * 0.8) * 0.1;
+      for (var i = escapeParticles.length - 1; i >= 0; i--) {
+        var ep = escapeParticles[i];
+        ep.userData.life += dt;
+        var ep_p = ep.userData.life / ep.userData.maxLife;
+
+        // Fly toward cloud
+        ep.position.x += ep.userData.vx * dt;
+        ep.position.y += ep.userData.vy * dt;
+        ep.rotation.z += ep.userData.spin * dt;
+
+        // Phase 1: flying (0-0.6 of life)
+        // Phase 2: shatter (0.6-1.0 of life)
+        if (ep_p < 0.6) {
+          ep.material.opacity = 0.8;
+        } else {
+          // Shatter: break into dust
+          var shatterP = (ep_p - 0.6) / 0.4;
+          ep.material.opacity = 0.8 * (1 - shatterP) * (1 - shatterP);
+          ep.scale.set(1 + shatterP * 2, (1 - shatterP) * 0.5, 1);
+          // Wobble
+          ep.position.y += (Math.random() - 0.5) * 0.04;
+          ep.position.z += (Math.random() - 0.5) * 0.04;
+        }
+
+        if (ep.userData.life > ep.userData.maxLife) {
+          scene.remove(ep);
+          escapeParticles.splice(i, 1);
+        }
+      }
+
+      /* ── Cloud node pulse ── */
+      cloudMat.opacity = 0.2 + Math.sin(t * 1.5) * 0.06;
+      cloudMesh.scale.setScalar(1 + Math.sin(t * 1.5) * 0.1);
+
+      /* ── Encrypted label fades in when sealed ── */
+      irisLabel.material.opacity = Math.max(0, (0.3 - irisOpen) * 1.5 * 0.6);
+
+      /* ── Inner glow pulse ── */
+      innerGlowMat.opacity = Math.max(innerGlowMat.opacity, 0.02 + Math.sin(t * 2) * 0.01);
+
+      /* ── Glass reflection shimmer ── */
+      glassMat.emissiveIntensity = 0.2 + Math.sin(t * 0.7) * 0.1 + (1 - irisOpen) * 0.3;
 
       renderer.render(scene, camera);
     }
 
     requestAnimationFrame(animate);
 
-    /* ── Resize handler ── */
+    /* ── Resize ── */
     function resize() {
       var rect = canvas.getBoundingClientRect();
       W = Math.round(rect.width);
