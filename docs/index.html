@@ -994,69 +994,109 @@
       hatchRingMat.opacity = 0.2 + openness * 0.4;
     }
 
-    /* ── Rocket ship ── */
+    /* ── Rocket ship (holographic design) ── */
     var rocketGroup = new THREE.Group();
     rocketGroup.visible = false;
     scene.add(rocketGroup);
 
-    // Rocket body (cylinder)
-    var rBodyGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.18, 12);
-    var rBodyMat = new THREE.MeshStandardMaterial({
-      color: 0xe0e0e8, metalness: 0.6, roughness: 0.3,
-      emissive: 0x222233, emissiveIntensity: 0.3
+    // Hologram shell material (translucent, glowing, semi-transparent)
+    var holoMat = new THREE.MeshStandardMaterial({
+      color: 0x22c55e, metalness: 0.1, roughness: 0.4,
+      emissive: 0x22c55e, emissiveIntensity: 0.5,
+      transparent: true, opacity: 0.15,
+      side: THREE.DoubleSide,
+      wireframe: false
     });
-    var rBody = new THREE.Mesh(rBodyGeo, rBodyMat);
-    rocketGroup.add(rBody);
 
-    // Nose cone
-    var rNoseGeo = new THREE.ConeGeometry(0.04, 0.08, 12);
+    // Hologram wireframe overlay material (the grid lines)
+    var holoWireMat = new THREE.MeshBasicMaterial({
+      color: 0x44ff88, transparent: true, opacity: 0.4,
+      wireframe: true, side: THREE.DoubleSide
+    });
+
+    // Rocket body — translucent green shell + wireframe overlay
+    var rBodyGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.18, 8, 1, true);
+    var rBody = new THREE.Mesh(rBodyGeo, holoMat);
+    rocketGroup.add(rBody);
+    var rBodyWire = new THREE.Mesh(rBodyGeo, holoWireMat);
+    rocketGroup.add(rBodyWire);
+
+    // Nose cone — translucent + wireframe
+    var rNoseGeo = new THREE.ConeGeometry(0.04, 0.08, 8, 1, true);
     var rNoseMat = new THREE.MeshStandardMaterial({
-      color: 0xa855f7, metalness: 0.5, roughness: 0.3,
-      emissive: 0xa855f7, emissiveIntensity: 0.4
+      color: 0x44ff88, metalness: 0.1, roughness: 0.3,
+      emissive: 0x44ff88, emissiveIntensity: 0.8,
+      transparent: true, opacity: 0.3,
+      side: THREE.DoubleSide
     });
     var rNose = new THREE.Mesh(rNoseGeo, rNoseMat);
     rNose.position.y = 0.13;
     rocketGroup.add(rNose);
+    var rNoseWire = new THREE.Mesh(rNoseGeo, new THREE.MeshBasicMaterial({
+      color: 0x44ff88, transparent: true, opacity: 0.5, wireframe: true, side: THREE.DoubleSide
+    }));
+    rNoseWire.position.y = 0.13;
+    rocketGroup.add(rNoseWire);
 
-    // Fins (3 small triangles)
+    // Fins — holographic wireframe triangles (3)
     for (var fi = 0; fi < 3; fi++) {
       var finShape = new THREE.Shape();
       finShape.moveTo(0, 0);
-      finShape.lineTo(0.03, -0.04);
-      finShape.lineTo(0, -0.06);
+      finShape.lineTo(0.035, -0.05);
+      finShape.lineTo(0, -0.07);
       finShape.closePath();
       var finGeo = new THREE.ShapeGeometry(finShape);
-      var finMat = new THREE.MeshStandardMaterial({
-        color: 0xa855f7, metalness: 0.5, roughness: 0.3,
-        emissive: 0xa855f7, emissiveIntensity: 0.3,
+      var finMat = new THREE.MeshBasicMaterial({
+        color: 0x22c55e, transparent: true, opacity: 0.25,
         side: THREE.DoubleSide
       });
       var fin = new THREE.Mesh(finGeo, finMat);
+      var finWireMat = new THREE.LineBasicMaterial({
+        color: 0x44ff88, transparent: true, opacity: 0.5
+      });
+      var finWire = new THREE.Line(new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.035, -0.05, 0), new THREE.Vector3(0, -0.07, 0), new THREE.Vector3(0, 0, 0)
+      ]), finWireMat);
+      var finGroup = new THREE.Group();
+      finGroup.add(fin);
+      finGroup.add(finWire);
       var fAngle = (fi / 3) * Math.PI * 2;
-      fin.position.set(Math.cos(fAngle) * 0.04, -0.09, Math.sin(fAngle) * 0.04);
-      fin.rotation.y = fAngle + Math.PI / 2;
-      rocketGroup.add(fin);
+      finGroup.position.set(Math.cos(fAngle) * 0.04, -0.09, Math.sin(fAngle) * 0.04);
+      finGroup.rotation.y = fAngle + Math.PI / 2;
+      rocketGroup.add(finGroup);
     }
 
-    // Flame trail (a cone that flickers)
-    var flameGeo = new THREE.ConeGeometry(0.03, 0.1, 8);
+    // Plasma trail (green energy cone — replaces fire)
+    var flameGeo = new THREE.ConeGeometry(0.025, 0.12, 8);
     var flameMat = new THREE.MeshBasicMaterial({
-      color: 0xff8844, transparent: true, opacity: 0
+      color: 0x44ff88, transparent: true, opacity: 0,
+      blending: THREE.AdditiveBlending, depthWrite: false
     });
     var flame = new THREE.Mesh(flameGeo, flameMat);
-    flame.position.y = -0.14;
-    flame.rotation.x = Math.PI; // point downward
+    flame.position.y = -0.15;
+    flame.rotation.x = Math.PI;
     rocketGroup.add(flame);
 
-    // Flame inner core (brighter)
-    var flameCoreGeo = new THREE.ConeGeometry(0.015, 0.06, 6);
+    // Plasma inner core (bright green-white)
+    var flameCoreGeo = new THREE.ConeGeometry(0.012, 0.07, 6);
     var flameCoreMat = new THREE.MeshBasicMaterial({
-      color: 0xffee88, transparent: true, opacity: 0
+      color: 0xaaffcc, transparent: true, opacity: 0,
+      blending: THREE.AdditiveBlending, depthWrite: false
     });
     var flameCore = new THREE.Mesh(flameCoreGeo, flameCoreMat);
-    flameCore.position.y = -0.12;
+    flameCore.position.y = -0.13;
     flameCore.rotation.x = Math.PI;
     rocketGroup.add(flameCore);
+
+    // Hologram glow halo (a translucent cylinder around the whole rocket)
+    var haloGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.26, 12, 1, true);
+    var haloMat = new THREE.MeshBasicMaterial({
+      color: 0x22c55e, transparent: true, opacity: 0.04,
+      side: THREE.BackSide, depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    var halo = new THREE.Mesh(haloGeo, haloMat);
+    rocketGroup.add(halo);
 
     /* ── Rocket launch state machine ── */
     // Phases: idle → hatch_opening → launching → flying → fading → done
@@ -1254,8 +1294,9 @@
         if (Math.random() > 0.3) {
           var ftGeo = new THREE.SphereGeometry(0.015 + Math.random() * 0.01, 6, 6);
           var ftMat = new THREE.MeshBasicMaterial({
-            color: Math.random() > 0.5 ? 0xff8844 : 0xffee88,
-            transparent: true, opacity: 0.7
+            color: Math.random() > 0.5 ? 0x22c55e : 0x44ff88,
+            transparent: true, opacity: 0.7,
+            blending: THREE.AdditiveBlending, depthWrite: false
           });
           var ft = new THREE.Mesh(ftGeo, ftMat);
           ft.position.copy(rocketGroup.position);
@@ -1289,8 +1330,9 @@
         if (Math.random() > 0.4) {
           var ftGeo = new THREE.SphereGeometry(0.012 + Math.random() * 0.008, 6, 6);
           var ftMat = new THREE.MeshBasicMaterial({
-            color: Math.random() > 0.5 ? 0xff8844 : 0xffee88,
-            transparent: true, opacity: 0.6
+            color: Math.random() > 0.5 ? 0x22c55e : 0x44ff88,
+            transparent: true, opacity: 0.6,
+            blending: THREE.AdditiveBlending, depthWrite: false
           });
           var ft = new THREE.Mesh(ftGeo, ftMat);
           ft.position.copy(rocketGroup.position);
@@ -1312,11 +1354,12 @@
       }
 
       if (rocketState === 'fading') {
-        // Rocket fades out at the cloud node
+        // Rocket fades out at the cloud node (hologram dissolves)
         var fadeP = Math.min(rocketTimer / 0.5, 1);
-        rBodyMat.transparent = true;
-        rBodyMat.opacity = 1 - fadeP;
-        rNoseMat.opacity = 1 - fadeP;
+        holoMat.opacity = 0.15 * (1 - fadeP);
+        holoWireMat.opacity = 0.4 * (1 - fadeP);
+        rNoseMat.opacity = 0.3 * (1 - fadeP);
+        haloMat.opacity = 0.04 * (1 - fadeP);
         flameMat.opacity = 0.8 * (1 - fadeP);
         flameCoreMat.opacity = 0.9 * (1 - fadeP);
         // Scale down slightly
@@ -1325,8 +1368,10 @@
         if (fadeP >= 1) {
           rocketGroup.visible = false;
           rocketGroup.scale.setScalar(1);
-          rBodyMat.opacity = 1;
-          rNoseMat.opacity = 1;
+          holoMat.opacity = 0.15;
+          holoWireMat.opacity = 0.4;
+          rNoseMat.opacity = 0.3;
+          haloMat.opacity = 0.04;
           flameMat.opacity = 0;
           flameCoreMat.opacity = 0;
           rocketState = 'idle';
