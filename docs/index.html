@@ -746,17 +746,21 @@
     camera.lookAt(0, 0, 0);
 
     /* ── Lighting ── */
-    scene.add(new THREE.AmbientLight(0x1a1a2a, 0.5));
-    var keyLight = new THREE.PointLight(0x22c55e, 3, 20);
-    keyLight.position.set(2, 3, 3);
+    scene.add(new THREE.AmbientLight(0x2a2a3a, 0.8));
+    var keyLight = new THREE.PointLight(0x22c55e, 4, 25);
+    keyLight.position.set(3, 4, 4);
     keyLight.decay = 0;
     scene.add(keyLight);
-    var fillLight = new THREE.PointLight(0x3b82f6, 1.5, 20);
-    fillLight.position.set(-3, 1, 2);
+    var fillLight = new THREE.PointLight(0x3b82f6, 2, 25);
+    fillLight.position.set(-4, 2, 3);
     fillLight.decay = 0;
     scene.add(fillLight);
-    var rimLight = new THREE.PointLight(0xa855f7, 1.2, 20);
-    rimLight.position.set(0, -2, -3);
+    var topLight = new THREE.PointLight(0xffffff, 1.5, 25);
+    topLight.position.set(0, 5, 2);
+    topLight.decay = 0;
+    scene.add(topLight);
+    var rimLight = new THREE.PointLight(0xa855f7, 1.5, 25);
+    rimLight.position.set(0, -3, -4);
     rimLight.decay = 0;
     scene.add(rimLight);
 
@@ -764,39 +768,77 @@
     var lensGroup = new THREE.Group();
     scene.add(lensGroup);
 
-    /* ── Outer lens barrel ── */
-    var barrelGeo = new THREE.CylinderGeometry(1.1, 1.15, 0.5, 64, 1, false);
+    /* ── Outer lens barrel (thicker, with ridges) ── */
+    var barrelGeo = new THREE.CylinderGeometry(1.15, 1.25, 0.7, 64, 1, false);
     var barrelMat = new THREE.MeshStandardMaterial({
-      color: 0x1a1d28, metalness: 0.9, roughness: 0.2,
-      emissive: 0x0a0a0f, emissiveIntensity: 0.3
+      color: 0x2a2d38, metalness: 0.95, roughness: 0.15,
+      emissive: 0x0a0a12, emissiveIntensity: 0.2
     });
     var barrel = new THREE.Mesh(barrelGeo, barrelMat);
     barrel.rotation.x = Math.PI / 2;
     lensGroup.add(barrel);
 
-    /* ── Barrel rim (front, glowing green) ── */
-    var rimGeo = new THREE.TorusGeometry(1.12, 0.05, 12, 64);
+    /* ── Barrel focus ridges (concentric rings on the outside) ── */
+    for (var ri = 0; ri < 3; ri++) {
+      var ridgeGeo = new THREE.TorusGeometry(1.17 + ri * 0.03, 0.025, 8, 64);
+      var ridgeMat = new THREE.MeshStandardMaterial({
+        color: 0x3a3d48, metalness: 0.9, roughness: 0.3
+      });
+      var ridge = new THREE.Mesh(ridgeGeo, ridgeMat);
+      ridge.rotation.x = Math.PI / 2;
+      ridge.position.z = 0.2 - ri * 0.15;
+      lensGroup.add(ridge);
+    }
+
+    /* ── Barrel rim (front, thick glowing green) ── */
+    var rimGeo = new THREE.TorusGeometry(1.15, 0.06, 16, 64);
     var rimMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
     var frontRim = new THREE.Mesh(rimGeo, rimMat);
-    frontRim.position.z = 0.25;
+    frontRim.position.z = 0.35;
     lensGroup.add(frontRim);
-    var backRim = new THREE.Mesh(rimGeo, new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.5 }));
-    backRim.position.z = -0.25;
-    lensGroup.add(backRim);
 
-    /* ── Glass element (the lens itself) ── */
+    /* ── Inner barrel ring (dark, visible behind iris) ── */
+    var innerRingGeo = new THREE.TorusGeometry(1.05, 0.08, 12, 48);
+    var innerRingMat = new THREE.MeshStandardMaterial({
+      color: 0x1a1c24, metalness: 0.8, roughness: 0.4
+    });
+    var innerRing = new THREE.Mesh(innerRingGeo, innerRingMat);
+    innerRing.position.z = 0.3;
+    lensGroup.add(innerRing);
+
+    /* ── Glass element (the lens — dark glass with green tint) ── */
     var glassGeo = new THREE.CircleGeometry(1.0, 64);
     var glassMat = new THREE.MeshStandardMaterial({
-      color: 0x0a0f18, metalness: 0.3, roughness: 0.05,
-      transparent: true, opacity: 0.35,
-      emissive: 0x0a1a0a, emissiveIntensity: 0.3,
+      color: 0x081820, metalness: 0.1, roughness: 0.02,
+      transparent: true, opacity: 0.5,
+      emissive: 0x0a1a12, emissiveIntensity: 0.2,
       side: THREE.DoubleSide
     });
     var glass = new THREE.Mesh(glassGeo, glassMat);
-    glass.position.z = 0.15;
+    glass.position.z = 0.2;
     lensGroup.add(glass);
 
-    /* ── Inner glass glow (behind iris — shows when iris is open) ── */
+    /* ── Glass highlight (bright spot to show it's glass, not a flat disc) ── */
+    var highlightGeo = new THREE.CircleGeometry(0.35, 32);
+    var highlightMat = new THREE.MeshBasicMaterial({
+      color: 0x88ccff, transparent: true, opacity: 0.06,
+      side: THREE.DoubleSide
+    });
+    var glassHighlight = new THREE.Mesh(highlightGeo, highlightMat);
+    glassHighlight.position.set(-0.3, 0.3, 0.42);
+    lensGroup.add(glassHighlight);
+
+    /* ── Aperture center glow (the bright dot you see through an open iris) ── */
+    var apertureGlowGeo = new THREE.CircleGeometry(0.15, 32);
+    var apertureGlowMat = new THREE.MeshBasicMaterial({
+      color: 0x44ff88, transparent: true, opacity: 0,
+      side: THREE.DoubleSide
+    });
+    var apertureGlow = new THREE.Mesh(apertureGlowGeo, apertureGlowMat);
+    apertureGlow.position.z = 0.40;
+    lensGroup.add(apertureGlow);
+
+    /* ── Inner glow (behind iris — shows when iris is open) ── */
     var innerGlowGeo = new THREE.CircleGeometry(0.95, 64);
     var innerGlowMat = new THREE.MeshBasicMaterial({
       color: 0x22c55e, transparent: true, opacity: 0.08,
@@ -806,32 +848,55 @@
     innerGlow.position.z = 0.1;
     lensGroup.add(innerGlow);
 
-    /* ── Iris blades (diaphragm) ── */
-    var NUM_BLADES = 8;
+    /* ── Iris blades (diaphragm — curved blades like a real camera) ── */
+    var NUM_BLADES = 7;
     var blades = [];
     var irisGroup = new THREE.Group();
-    irisGroup.position.z = 0.18;
+    irisGroup.position.z = 0.38;
     lensGroup.add(irisGroup);
 
     for (var i = 0; i < NUM_BLADES; i++) {
+      // Curved blade shape — wider, with a curve to look like real iris blades
       var bladeShape = new THREE.Shape();
-      bladeShape.moveTo(0, 0);
-      bladeShape.lineTo(0.9, -0.15);
-      bladeShape.lineTo(0.9, 0.15);
-      bladeShape.lineTo(0, 0);
+      bladeShape.moveTo(0, -0.12);
+      bladeShape.quadraticCurveTo(0.5, -0.22, 1.0, -0.08);
+      bladeShape.quadraticCurveTo(1.05, 0, 1.0, 0.08);
+      bladeShape.quadraticCurveTo(0.5, 0.22, 0, 0.12);
+      bladeShape.closePath();
 
       var bladeGeo = new THREE.ShapeGeometry(bladeShape);
+      // Blades are lighter with a blueish tint — visible against the dark barrel
       var bladeMat = new THREE.MeshStandardMaterial({
-        color: 0x12141c, metalness: 0.85, roughness: 0.15,
-        emissive: 0x080810, emissiveIntensity: 0.5,
+        color: 0x3a4050, metalness: 0.7, roughness: 0.25,
+        emissive: 0x0a0e16, emissiveIntensity: 0.4,
         side: THREE.DoubleSide
       });
       var blade = new THREE.Mesh(bladeGeo, bladeMat);
       var angle = (i / NUM_BLADES) * Math.PI * 2;
       blade.rotation.z = angle;
-      blade.userData = { baseAngle: angle, index: i };
+      blade.userData = { baseAngle: angle, index: i, material: bladeMat };
       irisGroup.add(blade);
       blades.push(blade);
+    }
+
+    /* ── Blade edge highlights (thin green lines on blade edges) ── */
+    var bladeEdges = [];
+    for (var i = 0; i < NUM_BLADES; i++) {
+      var edgeGeo = new THREE.BufferGeometry();
+      var pts = [
+        new THREE.Vector3(0, -0.12, 0),
+        new THREE.Vector3(1.0, -0.08, 0)
+      ];
+      edgeGeo.setFromPoints(pts);
+      var edgeMat = new THREE.LineBasicMaterial({
+        color: 0x22c55e, transparent: true, opacity: 0.3
+      });
+      var edge = new THREE.Line(edgeGeo, edgeMat);
+      var angle = (i / NUM_BLADES) * Math.PI * 2;
+      edge.rotation.z = angle;
+      edge.userData = { baseAngle: angle, material: edgeMat };
+      irisGroup.add(edge);
+      bladeEdges.push(edge);
     }
 
     /* ── Iris aperture state ── */
@@ -843,22 +908,33 @@
 
     function updateIris(openness) {
       // openness 0→1 maps blade rotation from closed to open
-      // Each blade rotates around the center; the aperture opens
       for (var i = 0; i < blades.length; i++) {
         var b = blades[i];
         var baseAngle = b.userData.baseAngle;
         // Blades swing outward as iris opens
-        var swing = openness * (Math.PI / NUM_BLADES) * 0.85;
+        var swing = openness * (Math.PI / NUM_BLADES) * 0.9;
         b.rotation.z = baseAngle + swing;
-        // Slight scale to simulate 3D curvature
-        b.scale.set(0.7 + openness * 0.4, 1, 1);
+        // Scale blades to fill more area when closed
+        b.scale.set(0.8 + openness * 0.3, 1, 1);
+        // Blades get darker (sealed) when closed, lighter (reflecting light) when open
+        var lightness = 0.2 + openness * 0.15;
+        b.userData.material.color.setHSL(0.6, 0.1, lightness);
+        b.userData.material.emissiveIntensity = 0.3 + (1 - openness) * 0.3;
       }
+      // Blade edge highlights brighten when closed (sealing glow)
+      for (var i = 0; i < bladeEdges.length; i++) {
+        bladeEdges[i].userData.material.opacity = 0.15 + (1 - openness) * 0.4;
+      }
+      // Aperture center glow — bright when open, gone when closed
+      apertureGlowMat.opacity = openness * 0.7;
       // Inner glow shows through when open
-      innerGlowMat.opacity = 0.04 + openness * 0.12;
-      // Glass becomes more transparent when open (you can see through)
-      glassMat.opacity = 0.2 + (1 - openness) * 0.25;
+      innerGlowMat.opacity = 0.04 + openness * 0.15;
+      // Glass becomes more transparent when open
+      glassMat.opacity = 0.3 + (1 - openness) * 0.3;
+      // Glass highlight stronger when open (light entering the lens)
+      highlightMat.opacity = 0.04 + openness * 0.08;
       // Green rim brightens when iris closes (sealing)
-      rimMat.color.setHSL(0.33, 0.7, 0.35 + (1 - openness) * 0.2);
+      rimMat.color.setHSL(0.33, 0.7, 0.35 + (1 - openness) * 0.25);
     }
 
     /* ── Video frames visible through the lens ── */
@@ -866,7 +942,7 @@
     var lensFrames = [];
     var MAX_LENS_FRAMES = 12;
     var frameGroup = new THREE.Group();
-    frameGroup.position.z = 0.12;
+    frameGroup.position.z = 0.37;
     lensGroup.add(frameGroup);
 
     function spawnLensFrame() {
@@ -940,7 +1016,7 @@
         side: THREE.DoubleSide
       });
       var ring = new THREE.Mesh(geo, mat);
-      ring.position.z = 0.3;
+      ring.position.z = 0.42;
       ring.userData = { life: 0, maxLife: 1.2 };
       lensGroup.add(ring);
       sealRings.push(ring);
@@ -948,7 +1024,7 @@
 
     /* ── Hexagonal encryption pattern on glass ── */
     var hexPattern = new THREE.Group();
-    hexPattern.position.z = 0.16;
+    hexPattern.position.z = 0.39;
     lensGroup.add(hexPattern);
     var hexCells = [];
 
