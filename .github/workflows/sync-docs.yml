@@ -73,6 +73,9 @@ jobs:
             gh pr edit "${EXISTING}" --title "${PR_TITLE}" --body "${PR_BODY}"
             echo "Updated existing PR #${EXISTING}"
           else
+            # Create the 'automated' label if it doesn't exist so PR creation
+            # does not fail. The label is optional; fall back gracefully.
+            gh label create automated --description "Automated PR opened by a GitHub Actions workflow" --color 0E8A16 2>/dev/null || true
             gh pr create --head "${SYNC_BRANCH}" --base master \
               --title "${PR_TITLE}" --body "${PR_BODY}" \
               --label "documentation" --label "automated"
