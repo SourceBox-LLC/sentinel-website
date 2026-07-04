@@ -109,7 +109,10 @@
     .cam-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; position: relative; aspect-ratio: 16/10; transition: all .25s; }
     .cam-card:hover { border-color: var(--border-2); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
     .cam-feed { position: absolute; inset: 0; overflow: hidden; }
+    .cam-feed img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .cam-scan { position: absolute; inset: 0; }
+    .cam-scanline { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(0,255,136,0.3), transparent); animation: scanline 4s linear infinite; z-index: 1; }
+    @keyframes scanline { 0% { top: 0; } 100% { top: 100%; } }
     .cam-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(8,9,13,0.85)); }
     .cam-label { position: absolute; bottom: 10px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center; z-index: 2; }
     .cam-name { font-size: 12px; font-weight: 500; color: var(--text); }
@@ -284,37 +287,37 @@
       <p class="sub reveal">Live HLS streaming with sub-10-second latency. Camera Node uploads segments in real-time — the cloud holds only a rolling 60-second buffer in memory.</p>
 
       <div class="cam-grid reveal" id="camGrid">
-        <!-- Camera cards with animated scan lines -->
+        <!-- Camera cards with real AI-generated security feeds -->
         <div class="cam-card">
-          <div class="cam-feed"><div class="cam-scan" style="background:linear-gradient(180deg,#0a1218,#0f1a20,#0a1218)"></div></div>
+          <div class="cam-feed"><img src="cams/front-door.jpg" alt="Front Door camera feed" loading="lazy"><div class="cam-scanline"></div></div>
           <div class="cam-overlay"></div>
           <div class="cam-rec"><span class="dot"></span>REC</div>
           <div class="cam-label"><span class="cam-name">Front Door</span><span class="cam-status"><span class="dot"></span>LIVE</span></div>
         </div>
         <div class="cam-card">
-          <div class="cam-feed"><div class="cam-scan" style="background:linear-gradient(180deg,#0a0f18,#0f1419,#0a0f18)"></div></div>
+          <div class="cam-feed"><img src="cams/backyard.jpg" alt="Backyard camera feed" loading="lazy"><div class="cam-scanline"></div></div>
           <div class="cam-overlay"></div>
           <div class="cam-label"><span class="cam-name">Backyard</span><span class="cam-status motion"><span class="dot"></span>MOTION</span></div>
         </div>
         <div class="cam-card">
-          <div class="cam-feed"><div class="cam-scan" style="background:linear-gradient(180deg,#0a0d15,#0e1018,#0a0d15)"></div></div>
+          <div class="cam-feed"><img src="cams/garage.jpg" alt="Garage camera feed" loading="lazy"><div class="cam-scanline"></div></div>
           <div class="cam-overlay"></div>
           <div class="cam-rec"><span class="dot"></span>REC</div>
           <div class="cam-label"><span class="cam-name">Garage</span><span class="cam-status"><span class="dot"></span>LIVE</span></div>
         </div>
         <div class="cam-card">
-          <div class="cam-feed"><div class="cam-scan" style="background:linear-gradient(180deg,#0d0a15,#130e1a,#0d0a15)"></div></div>
+          <div class="cam-feed"><img src="cams/living-room.jpg" alt="Living Room camera feed" loading="lazy" style="filter:grayscale(1) brightness(0.5)"><div class="cam-scanline"></div></div>
           <div class="cam-overlay"></div>
           <div class="cam-label"><span class="cam-name">Living Room</span><span class="cam-status offline"><span class="dot"></span>OFFLINE</span></div>
         </div>
         <div class="cam-card">
-          <div class="cam-feed"><div class="cam-scan" style="background:linear-gradient(180deg,#0a100e,#0d1411,#0a100e)"></div></div>
+          <div class="cam-feed"><img src="cams/driveway.jpg" alt="Driveway camera feed" loading="lazy"><div class="cam-scanline"></div></div>
           <div class="cam-overlay"></div>
           <div class="cam-rec"><span class="dot"></span>REC</div>
           <div class="cam-label"><span class="cam-name">Driveway</span><span class="cam-status"><span class="dot"></span>LIVE</span></div>
         </div>
         <div class="cam-card">
-          <div class="cam-feed"><div class="cam-scan" style="background:linear-gradient(180deg,#0e0d0a,#1a140d,#0e0d0a)"></div></div>
+          <div class="cam-feed"><img src="cams/side-gate.jpg" alt="Side Gate camera feed" loading="lazy"><div class="cam-scanline"></div></div>
           <div class="cam-overlay"></div>
           <div class="cam-label"><span class="cam-name">Side Gate</span><span class="cam-status"><span class="dot"></span>LIVE</span></div>
         </div>
@@ -679,23 +682,8 @@
 
   <!-- Camera card scan animations -->
   <script>
-  // Add animated scan lines to the camera grid cards
-  (function() {
-    var cards = document.querySelectorAll('.cam-scan');
-    cards.forEach(function(scan, i) {
-      // Animate via CSS by adding a moving gradient
-      scan.style.position = 'relative';
-      var line = document.createElement('div');
-      line.style.cssText = 'position:absolute;left:0;right:0;height:2px;background:rgba(34,197,94,0.4);top:0;animation:camScan ' + (3 + i * 0.5) + 's linear infinite;animation-delay:' + (i * 0.3) + 's';
-      scan.appendChild(line);
-    });
-    if (!document.getElementById('cam-scan-style')) {
-      var style = document.createElement('style');
-      style.id = 'cam-scan-style';
-      style.textContent = '@keyframes camScan { 0% { top:0%; opacity:0; } 10%{opacity:1} 90%{opacity:1} 100% { top:100%; opacity:0; } }';
-      document.head.appendChild(style);
-    }
-  })();
+  // Camera grid scan lines are now CSS-animated via .cam-scanline elements
+  // No JS needed — the scanline animation is in the CSS
   </script>
 
   <!-- Scroll reveal -->
