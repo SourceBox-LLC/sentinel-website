@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: sync-docs
@@ -47,10 +48,32 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Commit and push
+      - name: Commit and push to sync branch
         if: steps.changes.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "docs: auto-sync from Sentinel repos [$(date -u +%Y-%m-%dT%H:%M)]"
-          git push
+          # master is protected (requires PR + review). Push to a dedicated sync
+          # branch and open/update a PR instead of pushing directly to master.
+          SYNC_BRANCH="docs/auto-sync"
+          git push --force origin "HEAD:${SYNC_BRANCH}"
+
+      - name: Open or update sync PR
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SYNC_BRANCH="docs/auto-sync"
+          PR_TITLE="docs: auto-sync from Sentinel repos"
+          PR_BODY="Automated documentation sync from Sentinel repos. Opened by the \`Sync Docs\` workflow because \`master\` is protected and cannot receive direct pushes."
+          # Try to find an existing open PR for the sync branch.
+          EXISTING=$(gh pr list --head "${SYNC_BRANCH}" --base master --state open --json number --jq '.[0].number' || true)
+          if [ -n "${EXISTING}" ]; then
+            gh pr edit "${EXISTING}" --title "${PR_TITLE}" --body "${PR_BODY}"
+            echo "Updated existing PR #${EXISTING}"
+          else
+            gh pr create --head "${SYNC_BRANCH}" --base master \
+              --title "${PR_TITLE}" --body "${PR_BODY}" \
+              --label "documentation" --label "automated"
+          fi
