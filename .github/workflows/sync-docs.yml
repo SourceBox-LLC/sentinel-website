@@ -47,10 +47,29 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Commit and push
+      - name: Commit and push to sync branch
         if: steps.changes.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "docs: auto-sync from Sentinel repos [$(date -u +%Y-%m-%dT%H:%M)]"
-          git push
+          # master is protected (requires PR + review), so push to a dedicated
+          # sync branch and open/update a PR instead of pushing to master directly.
+          SYNC_BRANCH="docs/auto-sync"
+          git checkout -B "$SYNC_BRANCH"
+          git push --force origin "$SYNC_BRANCH"
+
+      - name: Open or update sync PR
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          SYNC_BRANCH="docs/auto-sync"
+          PR_BODY="Automated documentation sync from Sentinel repos. Updated $(date -u +%Y-%m-%dT%H:%M)."
+          # Create the PR if it doesn't exist; otherwise refresh its body.
+          if ! gh pr view "$SYNC_BRANCH" --json number >/dev/null 2>&1; then
+            gh pr create --base master --head "$SYNC_BRANCH" \
+              --title "docs: auto-sync from Sentinel repos" \
+              --body "$PR_BODY" \
+              --label documentation
+          else
+            gh pr edit "$SYNC_BRANCH" --body "$PR_BODY"
+          fi
