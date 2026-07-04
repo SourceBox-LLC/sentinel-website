@@ -116,14 +116,16 @@ def collect_pages(repo_dir):
 # ── Main ──
 print(f"Sentinel docs sync — {datetime.now(timezone.utc).isoformat()}")
 
-# Preserve index.html, wipe everything else in the mirror dir
+# Preserve index.html and the hand-curated README.md (docs landing page),
+# wipe everything else in the mirror dir so stale files are removed.
 if MIRROR.exists():
     for item in MIRROR.iterdir():
-        if item.name != "index.html":
-            if item.is_dir():
-                shutil.rmtree(item)
-            else:
-                item.unlink()
+        if item.name in ("index.html", "README.md"):
+            continue
+        if item.is_dir():
+            shutil.rmtree(item)
+        else:
+            item.unlink()
 else:
     MIRROR.mkdir(parents=True)
 
