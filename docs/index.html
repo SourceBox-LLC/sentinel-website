@@ -109,7 +109,7 @@
     .cam-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; position: relative; aspect-ratio: 16/10; transition: all .25s; }
     .cam-card:hover { border-color: var(--border-2); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
     .cam-feed { position: absolute; inset: 0; overflow: hidden; }
-    .cam-feed img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cam-feed img, .cam-feed video { width: 100%; height: 100%; object-fit: cover; display: block; }
     .cam-scan { position: absolute; inset: 0; }
     .cam-scanline { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(0,255,136,0.3), transparent); animation: scanline 4s linear infinite; z-index: 1; }
     @keyframes scanline { 0% { top: 0; } 100% { top: 100%; } }
@@ -287,37 +287,37 @@
       <p class="sub reveal">Live HLS streaming with sub-10-second latency. Camera Node uploads segments in real-time — the cloud holds only a rolling 60-second buffer in memory.</p>
 
       <div class="cam-grid reveal" id="camGrid">
-        <!-- Camera cards with real AI-generated security feeds -->
+        <!-- Camera cards with AI-generated security video feeds -->
         <div class="cam-card">
-          <div class="cam-feed"><img src="cams/front-door.jpg" alt="Front Door camera feed" loading="lazy"><div class="cam-scanline"></div></div>
+          <div class="cam-feed"><video autoplay loop muted playsinline poster="cams/front-door.jpg"><source src="cams/front-door.mp4" type="video/mp4"></video><div class="cam-scanline"></div></div>
           <div class="cam-overlay"></div>
           <div class="cam-rec"><span class="dot"></span>REC</div>
           <div class="cam-label"><span class="cam-name">Front Door</span><span class="cam-status"><span class="dot"></span>LIVE</span></div>
         </div>
         <div class="cam-card">
-          <div class="cam-feed"><img src="cams/backyard.jpg" alt="Backyard camera feed" loading="lazy"><div class="cam-scanline"></div></div>
+          <div class="cam-feed"><video autoplay loop muted playsinline poster="cams/backyard.jpg"><source src="cams/backyard.mp4" type="video/mp4"></video><div class="cam-scanline"></div></div>
           <div class="cam-overlay"></div>
           <div class="cam-label"><span class="cam-name">Backyard</span><span class="cam-status motion"><span class="dot"></span>MOTION</span></div>
         </div>
         <div class="cam-card">
-          <div class="cam-feed"><img src="cams/garage.jpg" alt="Garage camera feed" loading="lazy"><div class="cam-scanline"></div></div>
+          <div class="cam-feed"><video autoplay loop muted playsinline poster="cams/garage.jpg"><source src="cams/garage.mp4" type="video/mp4"></video><div class="cam-scanline"></div></div>
           <div class="cam-overlay"></div>
           <div class="cam-rec"><span class="dot"></span>REC</div>
           <div class="cam-label"><span class="cam-name">Garage</span><span class="cam-status"><span class="dot"></span>LIVE</span></div>
         </div>
         <div class="cam-card">
-          <div class="cam-feed"><img src="cams/living-room.jpg" alt="Living Room camera feed" loading="lazy" style="filter:grayscale(1) brightness(0.5)"><div class="cam-scanline"></div></div>
+          <div class="cam-feed"><video autoplay loop muted playsinline poster="cams/living-room.jpg" style="filter:grayscale(1) brightness(0.5)"><source src="cams/living-room.mp4" type="video/mp4"></video><div class="cam-scanline"></div></div>
           <div class="cam-overlay"></div>
           <div class="cam-label"><span class="cam-name">Living Room</span><span class="cam-status offline"><span class="dot"></span>OFFLINE</span></div>
         </div>
         <div class="cam-card">
-          <div class="cam-feed"><img src="cams/driveway.jpg" alt="Driveway camera feed" loading="lazy"><div class="cam-scanline"></div></div>
+          <div class="cam-feed"><video autoplay loop muted playsinline poster="cams/driveway.jpg"><source src="cams/driveway.mp4" type="video/mp4"></video><div class="cam-scanline"></div></div>
           <div class="cam-overlay"></div>
           <div class="cam-rec"><span class="dot"></span>REC</div>
           <div class="cam-label"><span class="cam-name">Driveway</span><span class="cam-status"><span class="dot"></span>LIVE</span></div>
         </div>
         <div class="cam-card">
-          <div class="cam-feed"><img src="cams/side-gate.jpg" alt="Side Gate camera feed" loading="lazy"><div class="cam-scanline"></div></div>
+          <div class="cam-feed"><video autoplay loop muted playsinline poster="cams/side-gate.jpg"><source src="cams/side-gate.mp4" type="video/mp4"></video><div class="cam-scanline"></div></div>
           <div class="cam-overlay"></div>
           <div class="cam-label"><span class="cam-name">Side Gate</span><span class="cam-status"><span class="dot"></span>LIVE</span></div>
         </div>
