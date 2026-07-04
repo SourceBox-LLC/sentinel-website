@@ -76,11 +76,12 @@ jobs:
             echo "Updated existing PR #${PR_NUMBER}"
           else
             PR_URL=$(gh pr create --head "${SYNC_BRANCH}" --base master \
-              --title "${PR_TITLE}" --body "${PR_BODY}" \
-              --label "documentation" --label "automated")
+              --title "${PR_TITLE}" --body "${PR_BODY}")
             PR_NUMBER=$(echo "${PR_URL}" | grep -oE '[0-9]+$')
             echo "Opened new PR #${PR_NUMBER}"
           fi
+          # Labels are cosmetic — apply best-effort, never fail the run.
+          gh pr edit "${PR_NUMBER}" --add-label "documentation,automated" >/dev/null 2>&1 || true
           # Master's review requirement is 0, so the GITHUB_TOKEN can merge the
           # PR directly (squash to satisfy required-linear-history). This keeps
           # the hourly cron fully automatic.
