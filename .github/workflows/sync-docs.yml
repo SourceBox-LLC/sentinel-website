@@ -54,26 +54,34 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "docs: auto-sync from Sentinel repos [$(date -u +%Y-%m-%dT%H:%M)]"
-          # master is protected (requires PR + review). Push to a dedicated sync
-          # branch and open/update a PR instead of pushing directly to master.
+          # master is protected (no direct push). Push to a dedicated sync
+          # branch and merge via PR (review requirement is 0, so the bot can
+          # self-merge) instead of pushing directly to master.
           SYNC_BRANCH="docs/auto-sync"
           git push --force origin "HEAD:${SYNC_BRANCH}"
 
-      - name: Open or update sync PR
+      - name: Open, update, and merge sync PR
         if: steps.changes.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SYNC_BRANCH="docs/auto-sync"
           PR_TITLE="docs: auto-sync from Sentinel repos"
-          PR_BODY="Automated documentation sync from Sentinel repos. Opened by the \`Sync Docs\` workflow because \`master\` is protected and cannot receive direct pushes."
-          # Try to find an existing open PR for the sync branch.
+          PR_BODY="Automated documentation sync from Sentinel repos. Opened and auto-merged by the \`Sync Docs\` workflow (master is protected, so changes land via PR rather than direct push)."
+          # Find an existing open PR for the sync branch, if any.
           EXISTING=$(gh pr list --head "${SYNC_BRANCH}" --base master --state open --json number --jq '.[0].number' || true)
           if [ -n "${EXISTING}" ]; then
             gh pr edit "${EXISTING}" --title "${PR_TITLE}" --body "${PR_BODY}"
-            echo "Updated existing PR #${EXISTING}"
+            PR_NUMBER="${EXISTING}"
+            echo "Updated existing PR #${PR_NUMBER}"
           else
-            gh pr create --head "${SYNC_BRANCH}" --base master \
+            PR_URL=$(gh pr create --head "${SYNC_BRANCH}" --base master \
               --title "${PR_TITLE}" --body "${PR_BODY}" \
-              --label "documentation" --label "automated"
+              --label "documentation" --label "automated")
+            PR_NUMBER=$(echo "${PR_URL}" | grep -oE '[0-9]+$')
+            echo "Opened new PR #${PR_NUMBER}"
           fi
+          # Master's review requirement is 0, so the GITHUB_TOKEN can merge the
+          # PR directly (squash to satisfy required-linear-history). This keeps
+          # the hourly cron fully automatic.
+          gh pr merge "${PR_NUMBER}" --squash --delete-branch --subject "${PR_TITLE}"
