@@ -73,7 +73,7 @@
 
     /* ── Hero ── */
     .hero { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    #hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    #hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; will-change: transform; }
     .hero-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 60%, transparent 0%, var(--bg) 85%); pointer-events: none; z-index: 1; }
     .hero-content { position: relative; z-index: 2; text-align: center; padding: 0 24px; max-width: 740px; }
     .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; border-radius: 999px; background: rgba(10,10,15,0.6); backdrop-filter: blur(8px); border: 1px solid var(--border); font-size: 12px; font-family: var(--mono); color: var(--text-2); margin-bottom: 28px; animation: heroIn .8s .2s ease both; }
@@ -648,6 +648,7 @@
     var ctx = canvas.getContext('2d');
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var w, h, mouseX = 0, mouseY = 0, smoothX = 0, smoothY = 0;
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function resize() {
       w = window.innerWidth; h = window.innerHeight;
@@ -694,8 +695,14 @@
       var time = t * 0.001;
 
       // Smooth mouse parallax
-      smoothX += (mouseX - smoothX) * 0.03;
-      smoothY += (mouseY - smoothY) * 0.03;
+      smoothX += (mouseX - smoothX) * 0.06;
+      smoothY += (mouseY - smoothY) * 0.06;
+
+      // 3D tilt: the tile plane tips toward the cursor (GPU transform,
+      // vignette masks the edges; slight scale hides corner pull-in)
+      if (!reduceMotion) {
+        canvas.style.transform = 'perspective(1200px) rotateX(' + (smoothY * 4).toFixed(3) + 'deg) rotateY(' + (-smoothX * 6).toFixed(3) + 'deg) scale(1.06)';
+      }
 
       ctx.clearRect(0, 0, w, h);
 
@@ -715,8 +722,10 @@
       var startY = (h - totalH) / 2 - 40;
 
       tiles.forEach(function(tile) {
-        var x = startX + tile.col * (tileW + 12) + smoothX * 15;
-        var y = startY + tile.row * (tileH + 12) + smoothY * 10 + Math.sin(time * 0.3 + tile.phase) * 4;
+        // Differential parallax: outer tiles drift more than center ones (fake depth)
+        var depthK = 1 + (Math.abs((tile.col + 0.5) / TILE_COLS - 0.5) + Math.abs((tile.row + 0.5) / TILE_ROWS - 0.5)) * 1.1;
+        var x = startX + tile.col * (tileW + 12) + smoothX * 15 * depthK;
+        var y = startY + tile.row * (tileH + 12) + smoothY * 10 * depthK + Math.sin(time * 0.3 + tile.phase) * 4;
 
         // Tile background
         ctx.fillStyle = 'rgba(15,17,25,' + tile.alpha + ')';
