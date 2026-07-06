@@ -991,7 +991,7 @@
     var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(dpr);
     renderer.setSize(W, H, false);
-    renderer.setClearColor(0x000000, 0);
+    renderer.setClearColor(0x08090d, 1); // opaque, exactly --bg: no visible canvas edge
 
     var camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 100);
     camera.position.set(0, 2.55, 5.4);
@@ -1053,8 +1053,9 @@
       domeGroup.add(new THREE.Line(spokeGeo, spokeMat));
     }
 
-    /* ── Dome shell (hemisphere wireframe — the "security dome") ── */
-    var shellGeo = new THREE.SphereGeometry(1.6, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+    /* ── Dome shell (hemisphere wireframe with a real opening at the pole for the hatch) ── */
+    var HATCH_HOLE_ANGLE = Math.asin(0.3 / 1.6);
+    var shellGeo = new THREE.SphereGeometry(1.6, 24, 16, 0, Math.PI * 2, HATCH_HOLE_ANGLE, Math.PI / 2 - HATCH_HOLE_ANGLE);
     var shellWire = new THREE.WireframeGeometry(shellGeo);
     var shellMat = new THREE.LineBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.06 });
     domeGroup.add(new THREE.LineSegments(shellWire, shellMat));
@@ -1305,9 +1306,9 @@
       shape.closePath();
       var geo = new THREE.ShapeGeometry(shape);
       var mat = new THREE.MeshStandardMaterial({
-        color: 0x1a1d28, metalness: 0.8, roughness: 0.3,
-        emissive: 0xa855f7, emissiveIntensity: 0.1,
-        transparent: true, opacity: 0.5,
+        color: 0x252a3a, metalness: 0.8, roughness: 0.3,
+        emissive: 0xa855f7, emissiveIntensity: 0.25,
+        transparent: true, opacity: 0.85,
         side: THREE.DoubleSide
       });
       var door = new THREE.Mesh(geo, mat);
@@ -1325,6 +1326,16 @@
     hatchGroup.add(hatchDoorL);
     hatchGroup.add(hatchDoorR);
 
+    // Light spill from the opening (brightens as the doors part)
+    var hatchSpillMat = new THREE.MeshBasicMaterial({
+      color: 0xa855f7, transparent: true, opacity: 0,
+      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
+    });
+    var hatchSpill = new THREE.Mesh(new THREE.CircleGeometry(0.28, 32), hatchSpillMat);
+    hatchSpill.rotation.x = -Math.PI / 2;
+    hatchSpill.position.y = HATCH_Y - 0.01;
+    hatchGroup.add(hatchSpill);
+
     // Hatch state: 0 = closed, 1 = open
     var hatchOpenness = 0;
     var hatchTarget = 0;
@@ -1332,11 +1343,12 @@
     function updateHatch(openness) {
       hatchDoorL.position.x = hatchDoorL.userData.openX * openness;
       hatchDoorR.position.x = hatchDoorR.userData.openX * openness;
-      // Doors fade slightly when open
-      hatchDoorL.material.opacity = 0.5 - openness * 0.3;
-      hatchDoorR.material.opacity = 0.5 - openness * 0.3;
-      // Ring brightens when open
-      hatchRingMat.opacity = 0.2 + openness * 0.4;
+      // Doors fade as they slide clear
+      hatchDoorL.material.opacity = 0.85 - openness * 0.5;
+      hatchDoorR.material.opacity = 0.85 - openness * 0.5;
+      // Ring + light spill brighten while open
+      hatchRingMat.opacity = 0.25 + openness * 0.5;
+      hatchSpillMat.opacity = openness * 0.35;
     }
 
     /* ── Rocket ship (holographic data-packet courier) ── */
@@ -1582,7 +1594,6 @@
       rocketState = 'charging';
       rocketTimer = 0;
       rocketRoll = 0;
-      hatchTarget = 1;
     }
     window.__sentinelLaunch = function () { if (rocketState === 'idle') launchRocket(); };
 
@@ -1713,7 +1724,7 @@
       rocketTimer += dt;
 
       // Smooth hatch open/close
-      hatchOpenness += (hatchTarget - hatchOpenness) * (1 - Math.exp(-dt * 4));
+      hatchOpenness += (hatchTarget - hatchOpenness) * (1 - Math.exp(-dt * 5));
       updateHatch(hatchOpenness);
 
       if (rocketState === 'idle' && rocketTimer > ROCKET_INTERVAL) {
@@ -1746,7 +1757,7 @@
           engineGlowMat.opacity = ig * 0.5;
           engineLight.intensity = ig * 1.5;
         }
-        if (cp >= 1 && hatchOpenness > 0.8) {
+        if (cp >= 1) {
           rocketState = 'flight';
           rocketTimer = 0;
           flameMat.opacity = 0.85;
@@ -1780,8 +1791,9 @@
         // Exhaust trail
         if (Math.random() > 0.35) spawnTrailPuff(pathTan);
 
-        // Close the hatch behind it
-        if (pathPos.y > HATCH_Y + 0.12) hatchTarget = 0;
+        // Hatch opens as the rocket nears it, closes once it's through
+        if (pathPos.y > HATCH_Y + 0.15) hatchTarget = 0;
+        else if (pathPos.y > 0.75) hatchTarget = 1;
 
         if (fp >= 1) {
           rocketState = 'burst';
