@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Sentinel</title>
+  <meta name="description" content="Privacy Policy for the Sentinel Command Center service, operated by SourceBox LLC.">
+  <meta property="og:title" content="Privacy Policy — Sentinel">
+  <meta property="og:description" content="How SourceBox LLC collects, uses, and protects your information when you use the Sentinel Command Center service.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230a0a0f'/><text x='50' y='68' font-size='52' font-weight='700' text-anchor='middle' fill='%2322c55e' font-family='sans-serif'>S</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #08090d;
+      --bg-1: #0f1119;
+      --bg-2: #161924;
+      --bg-3: #1e2230;
+      --border: rgba(255,255,255,0.07);
+      --border-2: rgba(255,255,255,0.12);
+      --green: #22c55e;
+      --green-dim: rgba(34,197,94,0.1);
+      --purple: #a855f7;
+      --text: #f4f5f7;
+      --text-2: #a1a1aa;
+      --text-3: #6b7280;
+      --text-4: #3f4350;
+      --grad: linear-gradient(135deg, #22c55e, #a855f7);
+      --r-sm: 6px; --r-md: 10px;
+      --max: 1080px;
+      --font: 'Outfit', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    a { color: var(--green); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ::selection { background: var(--green-dim); color: var(--text); }
+
+    .nav { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 14px; border-radius: 999px; background: rgba(10,10,15,0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0,0,0,0.5); max-width: calc(100vw - 32px); }
+    .nav a:hover { text-decoration: none; }
+    .nav-brand { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; white-space: nowrap; color: var(--text); }
+    .nav-brand .s { color: var(--green); font-weight: 700; }
+    .nav-links { display: flex; align-items: center; gap: 2px; }
+    .nav-links a { font-size: 13px; font-weight: 500; color: var(--text-2); padding: 6px 12px; border-radius: 999px; transition: all .15s; }
+    .nav-links a:hover { color: var(--text); background: var(--bg-3); }
+    .nav-cta { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; color: #08090d !important; background: var(--green); padding: 6px 14px; border-radius: 999px; transition: all .15s; }
+    .nav-cta:hover { background: #2ad66c; transform: translateY(-1px); }
+    @media (max-width: 720px) { .nav-links { display: none; } }
+
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+    .page-hero { padding: 150px 0 24px; text-align: center; }
+    .page-hero .label { display: inline-block; font-family: var(--mono); font-size: 12px; color: var(--green); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+    .page-hero h1 { font-size: clamp(30px, 5vw, 48px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; margin-bottom: 10px; }
+    .updated { font-family: var(--mono); font-size: 12px; color: var(--text-3); }
+
+    .legal-tabs { display: flex; justify-content: center; gap: 8px; margin: 20px 0 8px; }
+    .legal-tabs a { font-size: 13px; font-weight: 500; color: var(--text-2); border: 1px solid var(--border); padding: 6px 16px; border-radius: 999px; transition: all .15s; }
+    .legal-tabs a:hover { color: var(--text); background: var(--bg-2); text-decoration: none; }
+    .legal-tabs a.active { color: #08090d; background: var(--green); border-color: var(--green); font-weight: 600; }
+
+    article { max-width: 820px; margin: 0 auto; padding: 24px 24px 80px; }
+    article h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; margin: 34px 0 12px; }
+    article h3 { font-size: 17px; font-weight: 600; margin: 20px 0 8px; }
+    article p { color: var(--text-2); margin-bottom: 12px; }
+    article p strong, article li strong { color: var(--text); }
+    article ul { list-style: none; margin: 0 0 12px; }
+    article ul li { color: var(--text-2); padding: 5px 0 5px 22px; position: relative; }
+    article ul li::before { content: "•"; color: var(--green); position: absolute; left: 6px; }
+    article code { font-family: var(--mono); font-size: 0.85em; background: var(--bg-2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text); }
+
+    footer { border-top: 1px solid var(--border); padding: 48px 0 32px; }
+    .fgrid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 40px; }
+    @media (max-width: 720px) { .fgrid { grid-template-columns: 1fr 1fr; } }
+    .fbrand p { color: var(--text-3); font-size: 13px; margin-top: 10px; max-width: 300px; }
+    .fcol h5 { font-size: 12px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); margin-bottom: 12px; }
+    .fcol ul { list-style: none; }
+    .fcol li { margin-bottom: 8px; }
+    .fcol a { color: var(--text-2); font-size: 13px; }
+    .fcol a:hover { color: var(--text); text-decoration: none; }
+    .fbottom { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-4); }
+    .pills { display: flex; gap: 6px; }
+    .pill { font-size: 10px; font-family: var(--mono); border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px; color: var(--text-3); }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/" class="nav-brand"><span class="s">Sentinel</span></a>
+    <div class="nav-links">
+      <a href="/#features">Features</a>
+      <a href="/#privacy">Privacy</a>
+      <a href="/security/">Security</a>
+      <a href="/documentation/">Docs</a>
+    </div>
+    <a href="https://app.sentinel-command.com/sign-up" class="nav-cta">Get Started</a>
+  </nav>
+
+  <div class="page-hero">
+    <div class="wrap">
+      <span class="label">Legal</span>
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated: July 6, 2026</p>
+      <div class="legal-tabs">
+        <a href="/legal/terms/">Terms of Service</a>
+        <a href="/legal/privacy/" class="active">Privacy Policy</a>
+      </div>
+    </div>
+  </div>
+
+  <article>
+
+    <p>This Privacy Policy describes how SourceBox LLC ("Company," "we," "us," or "our") collects, uses, and protects your information when you use the Sentinel Command Center service ("Service").</p>
+    <p>A plain-language, engineer-facing walkthrough of the same data flows (with links to the exact files in our public source code that implement each behavior) is available at <a href="/security/">/security</a>. This Policy is the legally binding version; where a detail differs, the language here governs.</p>
+
+    <h2>1. Information We Collect</h2>
+
+    <h3>Account Information</h3>
+    <p>When you create an account, we collect your name, email address, and organization details through our authentication provider (Clerk). We do not store passwords directly. Payment information is processed by Stripe through Clerk and is never stored on our servers.</p>
+
+    <h3>Camera and Video Data</h3>
+    <p>Live video segments captured by your CameraNode cameras are pushed directly to the Command Center backend, where they are held in an in-memory cache (approximately the most recent 60 seconds per camera) only long enough to be served to authorized viewers in your organization. Live segments are not written to persistent disk, object storage, or any long-term storage on our servers.</p>
+    <p>Recordings and snapshots (if you enable them) are stored on your local CameraNode device in an encrypted SQLite database. Recording and snapshot blobs are sealed with AES-256-GCM at rest using a key derived from the host device's operating-system machine identifier, and the Service never ingests or retains copies of these files.</p>
+    <p><strong>Motion detection</strong> runs entirely on the CameraNode device using local video analysis. For motion detection, no raw video frames, object-detection thumbnails, or machine-learning embeddings are transmitted to the Service or to any third-party machine-learning provider &mdash; only motion event metadata (camera identifier, timestamp, scene-change score) is transmitted to the Service.</p>
+    <p><strong>Optional AI investigation agent (Sentinel).</strong> If your organization uses the optional Sentinel agent &mdash; a paid-tier feature with a per-organization on/off control in Settings &mdash; then, and only then, the agent captures camera <strong>snapshots (JPEG frames, which may include images of people, vehicles, and property)</strong> and sends them, together with incident text, to our large-language-model provider <strong>Ollama Cloud (ollama.com, United States)</strong> so the model can describe what it sees and draft an incident report. This is the one feature that transmits actual imagery off your devices, and it is engaged only when you run the agent. Organizations that never enable or trigger Sentinel send no imagery to any AI provider. See Section 4 for Ollama&rsquo;s role as a sub-processor.</p>
+    <p>Apart from the optional Sentinel agent described above, we do not access, analyze, view, or share your video content except as strictly necessary to provide the Service (e.g., serving HLS streams to authenticated users in your organization).</p>
+
+    <h3>Usage and Log Data</h3>
+    <p>We collect operational data to provide and secure the Service:</p>
+    <ul>
+      <li>Stream access logs (who viewed which camera, when, and IP address)</li>
+      <li>Per-organization monthly viewer-second aggregates used to enforce the viewer-hour cap for your plan</li>
+      <li>MCP tool call activity (tool name, API key used, timestamps, and duration)</li>
+      <li>Node registration and heartbeat data (hostname, local IP, camera status)</li>
+      <li>Audit logs for administrative actions</li>
+    </ul>
+    <p>Log retention is tiered by plan: 30 days on the Free tier, 90 days on Pro, and 365 days on Pro Plus. Expired records are permanently deleted by a scheduled daily cleanup task.</p>
+
+    <h3>Codec and Device Information</h3>
+    <p>Your CameraNode reports video/audio codec information (e.g., H.264 profile, AAC format) to ensure proper HLS stream playback. No other device telemetry is collected.</p>
+
+    <h2>2. How We Use Your Information</h2>
+    <p>We use collected information solely to:</p>
+    <ul>
+      <li>Provide, maintain, and improve the Service</li>
+      <li>Authenticate users and enforce organization-based access control</li>
+      <li>Serve HLS video streams with correct codec parameters</li>
+      <li>Enforce plan limits (cameras, nodes, MCP rate limits)</li>
+      <li>Generate usage statistics visible in your admin dashboard</li>
+      <li>Detect and prevent abuse or unauthorized access</li>
+      <li>Process payments and manage subscriptions</li>
+      <li>Communicate important service updates</li>
+    </ul>
+    <p>We do not use your information for advertising, profiling, or any purpose unrelated to providing the Service.</p>
+
+    <h2>3. Data Storage and Security</h2>
+    <p>We implement the following security measures:</p>
+    <ul>
+      <li>Service-side API keys (CameraNode keys and MCP integration keys) are stored as SHA-256 hashes; plaintext keys are never retained after issuance</li>
+      <li>Live video segments are kept in an isolated in-memory cache per organization and never written to a third-party object store</li>
+      <li>On the CameraNode device, the cloud-facing API key, recording segment blobs, and snapshot image blobs are encrypted at rest with AES-256-GCM using a key derived from the host's operating-system machine identifier</li>
+      <li>All connections between your browser, CameraNode devices, and the Service use HTTPS with HSTS enforcement; there is no disable-TLS code path</li>
+      <li>Authentication is handled by Clerk with industry-standard JWT verification</li>
+      <li>Organization data is isolated at the database level using org_id scoping on every query</li>
+      <li>Rate limits apply per tenant (CameraNode key, organization, or client IP) to mitigate abuse</li>
+      <li>Security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Strict-Transport-Security) are applied to all responses</li>
+    </ul>
+    <p>While we take reasonable measures to protect your data, no method of electronic transmission or storage is 100% secure. We cannot guarantee absolute security.</p>
+
+    <h2>4. Data Sharing</h2>
+    <p>We do not sell, rent, or trade your personal information or video data. We do not use analytics providers, advertising networks, retargeting services, or data brokers. We share information only with the following categories of third parties, solely as necessary to provide the Service:</p>
+    <ul>
+      <li><strong>Authentication and billing:</strong> Clerk (account management, organization membership, subscription management, session handling)</li>
+      <li><strong>Payment processing:</strong> Stripe via Clerk (subscription billing and tax calculation). Payment card data is handled by Stripe and is never transmitted to or stored on our servers</li>
+      <li><strong>Hosting:</strong> Fly.io (application hosting for the Command Center). Live video segments held in application memory are never persisted to Fly.io's disk-backed volumes</li>
+      <li><strong>Transactional email:</strong> Resend (US-based transactional email provider). Receives the recipient email address, subject line, and rendered body of each operational notification we send (camera offline, motion alerts, MCP key audit, etc.). Resend does not receive video, snapshots, recordings, or any data beyond what is necessary to deliver the email. Each email contains a one-click unsubscribe link.</li>
+      <li><strong>Error monitoring (optional):</strong> Sentry, only when the operator has configured the <code>SENTRY_DSN</code> environment variable. When enabled, Sentry receives application exception traces and a 10% sample of performance traces. Sentry does not receive video content, recording metadata, or end-user identifiers beyond what is present in exception stack traces. When <code>SENTRY_DSN</code> is unset, no data is sent to Sentry</li>
+      <li><strong>AI investigation (optional):</strong> Ollama Cloud (ollama.com, United States) &mdash; the large-language-model provider for the optional Sentinel agent. Engaged <strong>only</strong> when your organization runs Sentinel (a paid-tier feature with a per-organization on/off control). When engaged, Ollama receives camera image snapshots (JPEG frames, which may include images of people, vehicles, and property) and incident text so the model can analyze the scene and draft a report. This is the only sub-processor that receives imagery. Organizations that do not use Sentinel send no data to Ollama. See their privacy policy at <code>ollama.com/privacy</code></li>
+      <li><strong>Legal requirements:</strong> When required by law, regulation, subpoena, or other legal process. See Section 5 for our posture on legal process</li>
+      <li><strong>Safety:</strong> To protect the rights, property, or safety of our users or the public, where disclosure is narrowly necessary</li>
+    </ul>
+    <p>Each third-party provider operates under their own privacy policy and data processing terms. We encourage you to review their policies.</p>
+
+    <h3>Law enforcement and legal process</h3>
+    <p>We maintain no standing data-sharing arrangements with law enforcement agencies and do not participate in programs that grant warrantless access to customer accounts. When we receive a valid legal request, we respond only to the scope it mandates.</p>
+    <p>The only video-related data that resides on our servers is the ephemeral in-memory live cache described in Section 1; we do not retain copies of your recordings or snapshots. Requests for such recordings or snapshots must be directed to the controller of the CameraNode device on which that footage is stored. Where not prohibited by law, we will notify the affected organization administrator of legal requests so the organization may contest them directly.</p>
+
+    <h2>5. Data Retention</h2>
+    <ul>
+      <li>Live video segments are held in application memory only as long as needed for playback (approximately the most recent 60 one-second segments per camera) and are evicted automatically; segments are not persisted to disk on our servers</li>
+      <li>Recordings and snapshots are stored in encrypted form locally on your CameraNode device, not on our servers, and are subject to the retention and disk-quota settings you configure on that device</li>
+      <li>Stream access logs, MCP activity logs, motion event metadata, notification records, and audit logs are retained according to the organization's plan: 30 days on the Free tier, 90 days on Pro, and 365 days on Pro Plus. Expired records are permanently deleted by a scheduled daily cleanup task</li>
+      <li>Per-organization monthly viewer-second aggregates are retained indefinitely in a single aggregate row per calendar month so historical usage can be displayed in the dashboard; this row contains no personally identifiable information</li>
+      <li>Account data is retained as long as your account is active</li>
+      <li>Upon organization deletion, all associated nodes, cameras, camera groups, MCP keys, stream access logs, MCP activity logs, motion events, notifications, audit logs, monthly usage rows, and settings are permanently deleted in a single database transaction</li>
+      <li>You can delete all organization data at any time using the Full Reset feature in Settings, or by deleting your organization through Clerk</li>
+    </ul>
+
+    <h2>6. Your Rights</h2>
+    <p>Depending on your jurisdiction, you may have the right to:</p>
+    <ul>
+      <li><strong>Access:</strong> View your data through the dashboard and admin panel</li>
+      <li><strong>Deletion:</strong> Delete all your organization data via Full Reset in Settings, or by deleting your organization</li>
+      <li><strong>Portability:</strong> Stream access logs and MCP activity logs are viewable and exportable from the admin dashboard</li>
+      <li><strong>Correction:</strong> Update your account information through Clerk's account management</li>
+      <li><strong>Objection:</strong> Cancel your account at any time</li>
+      <li><strong>Withdraw consent:</strong> Stop using the Service at any time</li>
+    </ul>
+    <p>Most of these rights are self-serve from the dashboard&rsquo;s <strong>Settings &rarr; Privacy &amp; Data</strong> section &mdash; the <strong>Download my data (ZIP)</strong> button covers Article 20 portability with one click, and the <strong>Reset Everything</strong> action under Danger Zone covers Article 17 erasure (every node, camera, log, notification, and config row removed in a single transaction). <strong>Reset Everything is available on every plan, including Free</strong> &mdash; the right to erasure is a legal obligation we cannot gate behind a paid subscription.</p>
+    <p>Because your data lives inside an organization, these in-app export and erasure actions are organization-level operations performed by an <strong>organization administrator</strong> in Settings. If you are a member of an organization but not an administrator, you can still exercise your individual rights: ask your organization administrator to run the export or erasure on your behalf, or contact us directly using the channel below and we will handle your request (including verifying your identity where required). For anything the in-app actions don&rsquo;t cover, email <a href="mailto:support@sentinel-command.com">support@sentinel-command.com</a> or open an issue on our <a href="https://github.com/SourceBox-LLC/Sentinel-Command/issues" target="_blank" rel="noopener noreferrer">GitHub repository</a> (don&rsquo;t include personal data in a public issue) and we&rsquo;ll arrange a private follow-up. We respond within 30 days.</p>
+
+    <h2>7. International Data Transfers</h2>
+    <p>The Service is hosted in the United States. If you access the Service from outside the United States, your information may be transferred to and processed in the United States, where data protection laws may differ from those in your jurisdiction. By using the Service, you consent to this transfer. If you are located in the European Economic Area (EEA), United Kingdom, or other region with data transfer regulations, please be aware that we rely on your consent and the necessity of processing to provide the Service as the legal basis for data transfers.</p>
+
+    <h2>8. Cookies</h2>
+    <p>We use cookies only for authentication session management through Clerk. We do not use advertising, analytics, or tracking cookies. These cookies are strictly necessary for the Service to function and cannot be disabled while using the Service.</p>
+
+    <h2>9. Children's Privacy</h2>
+    <p>The Service is not intended for use by individuals under the age of 18. We do not knowingly collect personal information from children under 18. If we become aware that a child under 18 has provided us with personal information, we will take steps to delete such information promptly.</p>
+
+    <h2>10. California Privacy Rights (CCPA)</h2>
+    <p>If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA), including the right to know what personal information we collect, the right to delete your information, and the right to opt out of the sale of your information. We do not sell personal information. CCPA delete and access requests are self-serve from <strong>Settings &rarr; Privacy &amp; Data</strong> in the dashboard. For anything else, email <a href="mailto:support@sentinel-command.com">support@sentinel-command.com</a> or open an issue on our <a href="https://github.com/SourceBox-LLC/Sentinel-Command/issues" target="_blank" rel="noopener noreferrer">GitHub repository</a>.</p>
+
+    <h2>11. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. Material changes will be communicated through the Service dashboard or via email. Your continued use of the Service after changes take effect constitutes acceptance of the updated policy. If you do not agree with the updated policy, you must stop using the Service.</p>
+
+    <h2>12. Contact</h2>
+    <p>For privacy-related questions, email <a href="mailto:support@sentinel-command.com">support@sentinel-command.com</a> or open an issue on our <a href="https://github.com/SourceBox-LLC/Sentinel-Command/issues" target="_blank" rel="noopener noreferrer">GitHub repository</a>. To exercise your data rights, use the in-app <strong>Settings &rarr; Privacy &amp; Data</strong> section &mdash; Download my data (Article 20) and the Danger Zone&rsquo;s Reset Everything (Article 17) are both self-serve.</p>
+
+  </article>
+
+  <footer>
+    <div class="wrap">
+      <div class="fgrid">
+        <div class="fbrand">
+          <div class="nav-brand"><span class="s">Sentinel</span> by SourceBox</div>
+          <p>A private security camera system. Cloud-hosted surveillance where your footage never leaves your network for AI. Open source, encrypted at rest, multi-tenant from day one.</p>
+        </div>
+        <div class="fcol"><h5>Product</h5><ul><li><a href="/#features">Features</a></li><li><a href="/#privacy">Privacy</a></li><li><a href="/#architecture">Architecture</a></li><li><a href="/#mcp">MCP</a></li><li><a href="/documentation/">Docs</a></li></ul></div>
+        <div class="fcol"><h5>Resources</h5><ul><li><a href="https://app.sentinel-command.com">Live App</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command">Command Center</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode">Camera Node</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-HomeAssistant">Home Assistant</a></li></ul></div>
+        <div class="fcol"><h5>Community</h5><ul><li><a href="/security/">Security</a></li><li><a href="https://app.sentinel-command.com/pricing">Pricing</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command/issues">Report a bug</a></li><li><a href="/legal/terms/">Terms</a></li></ul></div>
+      </div>
+      <div class="fbottom">
+        <span>© 2026 SourceBox LLC · AGPL-3.0</span>
+        <div class="pills"><span class="pill">Open Source</span><span class="pill">Encrypted</span><span class="pill">Private</span></div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

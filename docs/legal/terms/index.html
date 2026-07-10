@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service — Sentinel</title>
+  <meta name="description" content="Terms of Service for the Sentinel Command Center service, operated by SourceBox LLC.">
+  <meta property="og:title" content="Terms of Service — Sentinel">
+  <meta property="og:description" content="Terms of Service for the Sentinel Command Center service, operated by SourceBox LLC.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230a0a0f'/><text x='50' y='68' font-size='52' font-weight='700' text-anchor='middle' fill='%2322c55e' font-family='sans-serif'>S</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #08090d;
+      --bg-1: #0f1119;
+      --bg-2: #161924;
+      --bg-3: #1e2230;
+      --border: rgba(255,255,255,0.07);
+      --border-2: rgba(255,255,255,0.12);
+      --green: #22c55e;
+      --green-dim: rgba(34,197,94,0.1);
+      --purple: #a855f7;
+      --text: #f4f5f7;
+      --text-2: #a1a1aa;
+      --text-3: #6b7280;
+      --text-4: #3f4350;
+      --grad: linear-gradient(135deg, #22c55e, #a855f7);
+      --r-sm: 6px; --r-md: 10px;
+      --max: 1080px;
+      --font: 'Outfit', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    a { color: var(--green); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ::selection { background: var(--green-dim); color: var(--text); }
+
+    .nav { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 14px; border-radius: 999px; background: rgba(10,10,15,0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0,0,0,0.5); max-width: calc(100vw - 32px); }
+    .nav a:hover { text-decoration: none; }
+    .nav-brand { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; white-space: nowrap; color: var(--text); }
+    .nav-brand .s { color: var(--green); font-weight: 700; }
+    .nav-links { display: flex; align-items: center; gap: 2px; }
+    .nav-links a { font-size: 13px; font-weight: 500; color: var(--text-2); padding: 6px 12px; border-radius: 999px; transition: all .15s; }
+    .nav-links a:hover { color: var(--text); background: var(--bg-3); }
+    .nav-cta { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; color: #08090d !important; background: var(--green); padding: 6px 14px; border-radius: 999px; transition: all .15s; }
+    .nav-cta:hover { background: #2ad66c; transform: translateY(-1px); }
+    @media (max-width: 720px) { .nav-links { display: none; } }
+
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+    .page-hero { padding: 150px 0 24px; text-align: center; }
+    .page-hero .label { display: inline-block; font-family: var(--mono); font-size: 12px; color: var(--green); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+    .page-hero h1 { font-size: clamp(30px, 5vw, 48px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; margin-bottom: 10px; }
+    .updated { font-family: var(--mono); font-size: 12px; color: var(--text-3); }
+
+    .legal-tabs { display: flex; justify-content: center; gap: 8px; margin: 20px 0 8px; }
+    .legal-tabs a { font-size: 13px; font-weight: 500; color: var(--text-2); border: 1px solid var(--border); padding: 6px 16px; border-radius: 999px; transition: all .15s; }
+    .legal-tabs a:hover { color: var(--text); background: var(--bg-2); text-decoration: none; }
+    .legal-tabs a.active { color: #08090d; background: var(--green); border-color: var(--green); font-weight: 600; }
+
+    article { max-width: 820px; margin: 0 auto; padding: 24px 24px 80px; }
+    article h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; margin: 34px 0 12px; }
+    article p { color: var(--text-2); margin-bottom: 12px; }
+    article p strong, article li strong { color: var(--text); }
+    article ul { list-style: none; margin: 0 0 12px; }
+    article ul li { color: var(--text-2); padding: 5px 0 5px 22px; position: relative; }
+    article ul li::before { content: "•"; color: var(--green); position: absolute; left: 6px; }
+    article code { font-family: var(--mono); font-size: 0.85em; background: var(--bg-2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text); }
+    article q { font-style: italic; }
+
+    footer { border-top: 1px solid var(--border); padding: 48px 0 32px; }
+    .fgrid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 40px; }
+    @media (max-width: 720px) { .fgrid { grid-template-columns: 1fr 1fr; } }
+    .fbrand p { color: var(--text-3); font-size: 13px; margin-top: 10px; max-width: 300px; }
+    .fcol h5 { font-size: 12px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); margin-bottom: 12px; }
+    .fcol ul { list-style: none; }
+    .fcol li { margin-bottom: 8px; }
+    .fcol a { color: var(--text-2); font-size: 13px; }
+    .fcol a:hover { color: var(--text); text-decoration: none; }
+    .fbottom { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-4); }
+    .pills { display: flex; gap: 6px; }
+    .pill { font-size: 10px; font-family: var(--mono); border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px; color: var(--text-3); }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/" class="nav-brand"><span class="s">Sentinel</span></a>
+    <div class="nav-links">
+      <a href="/#features">Features</a>
+      <a href="/#privacy">Privacy</a>
+      <a href="/security/">Security</a>
+      <a href="/documentation/">Docs</a>
+    </div>
+    <a href="https://app.sentinel-command.com/sign-up" class="nav-cta">Get Started</a>
+  </nav>
+
+  <div class="page-hero">
+    <div class="wrap">
+      <span class="label">Legal</span>
+      <h1>Terms of Service</h1>
+      <p class="updated">Last updated: July 6, 2026</p>
+      <div class="legal-tabs">
+        <a href="/legal/terms/" class="active">Terms of Service</a>
+        <a href="/legal/privacy/">Privacy Policy</a>
+      </div>
+    </div>
+  </div>
+
+  <article>
+
+    <h2>1. Acceptance of Terms</h2>
+    <p>By accessing or using the Sentinel Command Center service ("Service"), operated by SourceBox LLC ("Company," "we," "us," or "our"), you ("User," "you," or "your") agree to be bound by these Terms of Service ("Terms"). If you are using the Service on behalf of an organization, you represent and warrant that you have authority to bind that organization to these Terms, and "you" refers to both you individually and the organization.</p>
+    <p>If you do not agree to these Terms, you must not access or use the Service.</p>
+
+    <h2>2. Description of Service</h2>
+    <p>Sentinel provides a cloud-hosted security camera management platform that enables users to connect local camera nodes, view live video streams, and manage camera configurations. The Service includes web dashboard access, API access, and MCP (Model Context Protocol) integration for AI-powered camera interaction.</p>
+
+    <h2>3. Important Security Camera Disclaimer</h2>
+    <p><strong>THE SERVICE IS A CAMERA MANAGEMENT AND VIEWING TOOL ONLY. IT IS NOT A PROFESSIONAL SECURITY, SURVEILLANCE, OR ALARM MONITORING SYSTEM AND SHOULD NOT BE RELIED UPON AS SUCH.</strong></p>
+    <p>The Service does not provide emergency response, law enforcement notification, or 24/7 monitoring. We do not guarantee that cameras will remain online, that video will be captured or retained during any specific event, or that the Service will detect, prevent, or record any incident including but not limited to theft, vandalism, trespass, or personal injury.</p>
+    <p>You acknowledge that camera connectivity depends on your local network, hardware, power supply, and internet connection, none of which are under our control. You are solely responsible for your own physical security arrangements.</p>
+
+    <h2>4. Compliance with Surveillance and Recording Laws</h2>
+    <p>You are solely responsible for ensuring that your use of the Service complies with all applicable federal, state, local, and international laws and regulations regarding video surveillance, audio recording, data collection, and privacy, including but not limited to:</p>
+    <ul>
+      <li>Consent requirements for audio and video recording in your jurisdiction</li>
+      <li>Signage or notice requirements for surveillance in your area</li>
+      <li>Restrictions on recording in private spaces or workplaces</li>
+      <li>Data protection regulations (such as GDPR, CCPA, or equivalent local laws)</li>
+    </ul>
+    <p>We do not provide legal advice regarding surveillance compliance. You should consult with a qualified attorney to understand your obligations. We are not liable for any claims, fines, or damages arising from your failure to comply with applicable surveillance or recording laws.</p>
+
+    <h2>5. Accounts and Organizations</h2>
+    <p>You must create an account and organization to use the Service. You are responsible for maintaining the confidentiality of your account credentials and all API keys (including CameraNode keys and MCP keys). You must notify us immediately of any unauthorized use of your account. You are responsible for all activity that occurs under your account.</p>
+
+    <h2>6. Subscription Plans and Payment</h2>
+    <p>The Service offers Free, Pro, and Pro Plus subscription tiers. Paid plans are billed monthly or annually at your election through our payment processor (Stripe, via Clerk). Upgrades take effect immediately; downgrades take effect at the end of the current billing period.</p>
+    <p><strong>Usage-based tier structure.</strong> The binding constraint for each tier is a monthly <strong>viewer-hour cap</strong>, which meters the number of hours of live HLS video we serve to authenticated viewers in your organization (30 hours on Free, 300 on Pro, 1,500 on Pro Plus). Recordings stored locally on your CameraNode device and motion-event metadata do not count against this cap. When the cap is reached, live-video playback pauses with an upgrade prompt until the 1st of the next calendar month; cameras continue recording locally, motion detection continues to fire, and MCP integrations continue to function. Hardware counts (cameras, nodes, seats) are enforced as generous safety limits rather than primary tier differentiators.</p>
+    <p><strong>No overage billing.</strong> Your monthly bill is the plan price you selected. When a metered limit is reached (viewer-hours or MCP calls) we pause the metered feature rather than apply automatic overage charges.</p>
+    <p><strong>Camera-cap enforcement on downgrade or cancellation.</strong> If, after a downgrade, your organization has more cameras registered than your new plan allows, we retain the oldest cameras (by creation date) up to your new cap and mark the rest as <em>suspended</em>. Suspended cameras stop streaming to the Command Center — the CameraNode surfaces a <q>Suspended — Plan Limit</q> badge and an upgrade prompt on each affected camera tile. The camera records themselves are preserved, so upgrading back to a higher tier immediately restores streaming with no reconfiguration.</p>
+    <p><strong>Failed payments and the grace period.</strong> If a charge fails, your account enters a <strong>7-day grace period</strong> during which the charge is retried automatically. During grace you retain full access to your paid plan, except that creation of new MCP API keys is blocked. If the card is not recovered within 7 days of the first failure, we apply Free-tier camera caps using the oldest-first rule above until payment succeeds — at which point suspended cameras resume streaming within one heartbeat cycle (~30 seconds). Nothing is deleted during this process.</p>
+    <p><strong>Re-subscription.</strong> Resuming a cancelled subscription (or upgrading back from Free) re-enables all previously-suspended cameras and nodes automatically. Local recordings, snapshots, and camera metadata persist on your CameraNode device throughout this cycle — we never delete your local data as part of billing enforcement.</p>
+    <p><strong>Cancellation and refunds.</strong> You may cancel at any time from your billing settings; cancellation stops future renewals and your paid features remain active through the end of the period you have already paid for. Subscription fees are billed in advance and, except as set out below or as required by applicable law, are <strong>non-refundable</strong>, and we do not provide partial-period refunds or credits for unused time after a voluntary cancellation or downgrade. We will, however, issue a refund where one is required by law or by our agreements with you, including: (a) the statutory right of withdrawal available to consumers in the EU, UK, and other jurisdictions that provide one (typically a 14-day period after purchase, subject to the rules on digital services that have already been used); (b) the pro-rated refund of prepaid fees for the unused period that we commit to in our <a href="https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/docs/legal/DPA.md" target="_blank" rel="noopener noreferrer">Data Processing Addendum</a> if you terminate because you reasonably object to a new sub-processor; and (c) any refund we choose to grant at our discretion, for example for a confirmed extended Service outage. To request a refund or dispute a charge, contact us through the channel in Section 18 before initiating a chargeback so we can resolve it directly.</p>
+
+    <h2>7. Acceptable Use</h2>
+    <p>You agree not to:</p>
+    <ul>
+      <li>Use the Service for any unlawful purpose or in violation of any applicable laws</li>
+      <li>Use the Service to conduct surveillance in violation of any person's reasonable expectation of privacy</li>
+      <li>Attempt to gain unauthorized access to the Service or its related systems</li>
+      <li>Interfere with or disrupt the Service or its infrastructure</li>
+      <li>Use the Service to store or transmit malicious code</li>
+      <li>Reverse engineer, decompile, or disassemble the Service</li>
+      <li>Resell or redistribute access to the Service without authorization</li>
+      <li>Exceed published rate limits or abuse API access</li>
+    </ul>
+
+    <h2>8. API Keys and Access Credentials</h2>
+    <p>API keys (including CameraNode keys and MCP API keys) are sensitive credentials. You are solely responsible for securing your keys and for any actions taken using them. We store keys using SHA-256 hashing and never retain plaintext copies. If you believe a key has been compromised, you must revoke it immediately through the dashboard.</p>
+
+    <h2>9. Data and Video Content</h2>
+    <p>You retain ownership of all video content captured by your cameras and served through the Service. We do not access, view, or share your video content except as necessary to provide the Service or as required by law. Live video segments are buffered briefly in your organization's isolated in-memory cache for playback; recordings and snapshots are stored locally on your CameraNode.</p>
+    <p>You are solely responsible for the legality of content captured, stored, and shared through your use of the Service.</p>
+
+    <h2>10. Third-Party Services</h2>
+    <p>The Service relies on third-party providers including Clerk (authentication) and Fly.io (hosting). We are not responsible for the availability, performance, or policies of these third-party services. Outages or changes by these providers may affect the Service, and we shall not be liable for any resulting disruption or data loss.</p>
+
+    <h2>11. Disclaimer of Warranties</h2>
+    <p><strong>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, OR STATUTORY. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, WE DISCLAIM ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND ANY WARRANTIES ARISING FROM COURSE OF DEALING OR USAGE OF TRADE.</strong></p>
+    <p><strong>WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, SECURE, OR FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS. WE DO NOT WARRANT THAT CAMERAS WILL REMAIN CONNECTED, THAT VIDEO WILL BE CAPTURED OR STORED SUCCESSFULLY, OR THAT THE SERVICE WILL MEET YOUR SECURITY REQUIREMENTS.</strong></p>
+
+    <h2>12. Limitation of Liability</h2>
+    <p><strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE COMPANY, ITS OFFICERS, DIRECTORS, EMPLOYEES, AGENTS, OR AFFILIATES BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS, REVENUE, DATA, GOODWILL, OR OTHER INTANGIBLE LOSSES, ARISING FROM OR RELATED TO YOUR USE OF OR INABILITY TO USE THE SERVICE, WHETHER BASED ON WARRANTY, CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, OR ANY OTHER LEGAL THEORY.</strong></p>
+    <p><strong>WITHOUT LIMITING THE FOREGOING, THE COMPANY SHALL NOT BE LIABLE FOR ANY DAMAGES ARISING FROM: (A) THE FAILURE OF CAMERAS OR NODES TO CAPTURE, TRANSMIT, OR STORE VIDEO; (B) SECURITY INCIDENTS, THEFT, PROPERTY DAMAGE, OR PERSONAL INJURY THAT CAMERAS FAILED TO RECORD OR PREVENT; (C) SERVICE INTERRUPTIONS OR DOWNTIME; (D) UNAUTHORIZED ACCESS TO YOUR ACCOUNT OR DATA; OR (E) ACTIONS OF THIRD-PARTY SERVICE PROVIDERS.</strong></p>
+    <p><strong>TO THE EXTENT PERMITTED BY LAW, OUR TOTAL AGGREGATE LIABILITY FOR ALL CLAIMS ARISING FROM OR RELATED TO THE SERVICE SHALL NOT EXCEED THE TOTAL AMOUNT YOU PAID TO US IN THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO THE CLAIM, OR FIFTY DOLLARS ($50.00), WHICHEVER IS GREATER.</strong></p>
+
+    <h2>13. Indemnification</h2>
+    <p>You agree to indemnify, defend, and hold harmless the Company, its officers, directors, employees, agents, and affiliates from and against any and all claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising from or related to:</p>
+    <ul>
+      <li>Your use of the Service</li>
+      <li>Your violation of these Terms</li>
+      <li>Your violation of any applicable law, including surveillance and recording laws</li>
+      <li>Any content captured, stored, or shared through your use of the Service</li>
+      <li>Any claim by a third party related to your camera deployment or video content</li>
+      <li>Your failure to secure your account credentials or API keys</li>
+    </ul>
+
+    <h2>14. Termination</h2>
+    <p>Either party may terminate the agreement at any time. You may cancel your subscription through the billing settings. We may suspend or terminate your access for violation of these Terms, non-payment, or any other reason at our sole discretion.</p>
+    <p>Upon termination, your access to the Service will cease. Your data may be deleted after a reasonable retention period (typically 30 days). You may use the Full Reset feature in Settings to delete all your data before canceling. Sections 3, 4, 9, 11, 12, 13, 16, and 17 survive termination.</p>
+
+    <h2>15. Changes to Terms</h2>
+    <p>We may update these Terms from time to time. Material changes will be communicated through the Service dashboard or via email. Your continued use of the Service after changes take effect constitutes acceptance of the updated Terms. If you do not agree with the updated Terms, you must stop using the Service.</p>
+
+    <h2>16. Governing Law and Dispute Resolution</h2>
+    <p>These Terms shall be governed by and construed in accordance with the laws of the State of Washington, without regard to its conflict of law provisions. Any disputes arising under these Terms shall be resolved in the state or federal courts located in Washington State, and you consent to personal jurisdiction in such courts.</p>
+
+    <h2>17. General Provisions</h2>
+    <p><strong>Severability:</strong> If any provision of these Terms is found to be unenforceable, the remaining provisions shall continue in full force and effect.</p>
+    <p><strong>Entire Agreement:</strong> These Terms, together with the Privacy Policy, constitute the entire agreement between you and the Company regarding the Service and supersede all prior agreements.</p>
+    <p><strong>Waiver:</strong> The failure to enforce any provision of these Terms shall not constitute a waiver of that provision.</p>
+    <p><strong>Force Majeure:</strong> We shall not be liable for any delay or failure to perform resulting from causes outside our reasonable control, including but not limited to natural disasters, power outages, internet disruptions, government actions, or pandemics.</p>
+    <p><strong>Assignment:</strong> You may not assign your rights under these Terms without our prior written consent. We may assign our rights at any time.</p>
+
+    <h2>18. Contact</h2>
+    <p>For questions about these Terms, email <a href="mailto:support@sentinel-command.com">support@sentinel-command.com</a> or open an issue on our <a href="https://github.com/SourceBox-LLC/Sentinel-Command/issues" target="_blank" rel="noopener noreferrer">GitHub repository</a>. If you use the public issue tracker, please don't include personally identifying details in the issue body — open the issue first and we'll arrange a private follow-up.</p>
+
+  </article>
+
+  <footer>
+    <div class="wrap">
+      <div class="fgrid">
+        <div class="fbrand">
+          <div class="nav-brand"><span class="s">Sentinel</span> by SourceBox</div>
+          <p>A private security camera system. Cloud-hosted surveillance where your footage never leaves your network for AI. Open source, encrypted at rest, multi-tenant from day one.</p>
+        </div>
+        <div class="fcol"><h5>Product</h5><ul><li><a href="/#features">Features</a></li><li><a href="/#privacy">Privacy</a></li><li><a href="/#architecture">Architecture</a></li><li><a href="/#mcp">MCP</a></li><li><a href="/documentation/">Docs</a></li></ul></div>
+        <div class="fcol"><h5>Resources</h5><ul><li><a href="https://app.sentinel-command.com">Live App</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command">Command Center</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode">Camera Node</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-HomeAssistant">Home Assistant</a></li></ul></div>
+        <div class="fcol"><h5>Community</h5><ul><li><a href="/security/">Security</a></li><li><a href="https://app.sentinel-command.com/pricing">Pricing</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command/issues">Report a bug</a></li><li><a href="/legal/terms/">Terms</a></li></ul></div>
+      </div>
+      <div class="fbottom">
+        <span>© 2026 SourceBox LLC · AGPL-3.0</span>
+        <div class="pills"><span class="pill">Open Source</span><span class="pill">Encrypted</span><span class="pill">Private</span></div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
