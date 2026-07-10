@@ -14,8 +14,6 @@
   - [0002 Viewer Hour Billing](command/docs/adr/0002-viewer-hour-billing)
   - [Data Processing Agreement](command/docs/legal/DPA)
   - [Sub-processors](command/docs/legal/SUB_PROCESSORS)
-  - [Disaster Recovery](command/docs/runbooks/DISASTER_RECOVERY)
-  - [On-call Guide](command/docs/runbooks/ON_CALL)
 
 - **Camera Node**
   - [Overview](camera-node/README)
