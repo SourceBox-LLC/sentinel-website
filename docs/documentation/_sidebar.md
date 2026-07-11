@@ -10,6 +10,8 @@
   - [Security Policy](command/SECURITY)
   - [Launch Handoff](command/docs/LAUNCH_HANDOFF)
   - [Overview](command/docs/README)
+  - [0001 Sync Schema Vs Alembic](command/docs/adr/0001-sync-schema-vs-alembic)
+  - [0002 Viewer Hour Billing](command/docs/adr/0002-viewer-hour-billing)
   - [Data Processing Agreement](command/docs/legal/DPA)
   - [Sub-processors](command/docs/legal/SUB_PROCESSORS)
   - [Disaster Recovery](command/docs/runbooks/DISASTER_RECOVERY)
