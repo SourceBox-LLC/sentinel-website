@@ -19,6 +19,7 @@
 
 - **Camera Node**
   - [Overview](camera-node/README)
+  - [Overview](camera-node/docs/README)
   - [0001 Pi Software Encoding](camera-node/docs/adr/0001-pi-software-encoding)
   - [0002 Machine Id Encryption Key](camera-node/docs/adr/0002-machine-id-encryption-key)
   - [0003 Sqlite Recording Store](camera-node/docs/adr/0003-sqlite-recording-store)
