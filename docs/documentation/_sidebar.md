@@ -24,6 +24,8 @@
   - [0002 Machine Id Encryption Key](camera-node/docs/adr/0002-machine-id-encryption-key)
   - [0003 Sqlite Recording Store](camera-node/docs/adr/0003-sqlite-recording-store)
   - [0004 Installer Binary Integrity](camera-node/docs/adr/0004-installer-binary-integrity)
+  - [Local Mode Setup](camera-node/docs/runbooks/local-mode-setup)
+  - [Video Not Showing](camera-node/docs/runbooks/video-not-showing)
 
 - **Home Assistant**
   - [Overview](home-assistant/README)
