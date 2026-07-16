@@ -33,9 +33,35 @@ jobs:
           sudo apt update && sudo apt install gh -y
 
       - name: Auth GitHub CLI
-        run: gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # gh auth login validates the token against api.github.com, which can
+          # return transient 5xx ("Partially Degraded Service" / Unicorn pages).
+          # Retry a few times so an intermittent API outage doesn't fail the
+          # hourly cron. The token is also exported via GH_TOKEN for every later
+          # step, so even if explicit auth is skipped the sync script's `gh api`
+          # calls authenticate through the environment variable.
+          for i in $(seq 1 5); do
+            if gh auth login --with-token <<< "${GH_TOKEN}"; then
+              echo "gh auth succeeded on attempt $i"
+              break
+            fi
+            echo "gh auth attempt $i failed (exit $?), likely transient API 5xx"
+            if [ "$i" -eq 5 ]; then
+              echo "::error::gh auth login failed after 5 attempts — GitHub API may be degraded"
+              exit 1
+            fi
+            sleep $(( i * 5 ))
+          done
+          # Sanity-check: confirm gh can reach the API (also retried).
+          gh api user --jq .login >/dev/null || {
+            echo "::warning::gh api user failed after auth — proceeding with GH_TOKEN env for sync"
+          }
 
       - name: Run sync script
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 sync_docs.py
 
       - name: Check for changes
