@@ -33,7 +33,22 @@ jobs:
           sudo apt update && sudo apt install gh -y
 
       - name: Auth GitHub CLI
-        run: gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+        # gh auth login calls the GitHub GraphQL/REST API to validate the
+        # token, which occasionally fails with a transient HTTP 5xx when
+        # GitHub is degraded (e.g. run #576 — HTTP 503 "No server is
+        # currently available"). Wrap it in a retry so an hourly sync isn't
+        # killed by a momentary GitHub-side blip; the token itself is fine.
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"; then
+              echo "gh auth succeeded on attempt ${attempt}"
+              exit 0
+            fi
+            echo "gh auth attempt ${attempt} failed; retrying in $((attempt * 5))s..."
+            sleep $((attempt * 5))
+          done
+          echo "::error::gh auth login failed after 5 attempts (GitHub API likely degraded)"
+          exit 1
 
       - name: Run sync script
         run: python3 sync_docs.py
