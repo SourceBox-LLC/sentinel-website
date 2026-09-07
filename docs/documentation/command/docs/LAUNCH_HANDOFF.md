@@ -240,38 +240,47 @@ accidentally.
 > (empty pre-launch DB, no data lost), leftover `opensentry.db` + orphaned
 > `opensentry_data` volume removed, `/api/health/detailed` = database ok,
 > and a manual backup run **succeeded**. Remaining optional: set
-> `BACKUP_ENCRYPTION_KEY` for encrypted off-platform artifact copies.
+> `BACKUP_ENCRYPTION_KEY` — **closed 2026-09-07: declined.** Backups are
+> Fly-only by decision; see DISASTER_RECOVERY.md.
 
-**State now.** **We use SQLite on a Fly volume**, not Fly's managed
-Postgres. `DATABASE_URL=sqlite:////data/sentinel.db` per `fly.toml`.
-The volume is `sentinel_data` mounted at `/data`. Fly snapshots
-the volume daily on their default schedule (5-day retention on the
-Free plan, longer on paid).
+> **2026-09-07 — migrated to Postgres; drill re-run and PASSED.** The
+> paragraph below described SQLite-on-a-volume, which is no longer how
+> this runs. See `docs/runbooks/DISASTER_RECOVERY.md` for the current
+> procedure and the new drill log entry.
+
+**State now.** The hosted database is **Postgres**, in the
+`sentinel_command` database on the managed `sentinel-postgres` cluster
+(shared with Sync-Service and License-Service — separate databases).
+`DATABASE_URL` is a **Fly secret**, not a `fly.toml` env value, because
+it carries a password. The `sentinel_data` volume still exists but now
+holds only HLS segment working files and `/data/backups` — **losing it
+no longer loses data.** Backups are the cluster's managed snapshots
+(primary) plus a daily `pg_dump` from `.github/workflows/backup.yml`
+(portable secondary).
+
+Self-hosted installs still run SQLite; the codebase supports both and CI
+tests both.
 
 **What you need to do.**
-1. Verify the volume snapshot schedule:
+1. Verify the cluster's snapshot schedule:
    ```
-   fly volumes snapshots list <volume_id> -a sentinel-command
+   fly volumes list -a sentinel-postgres
+   fly volumes snapshots list <volume_id> -a sentinel-postgres
    ```
    You should see daily snapshots going back 5+ days.
-2. **Test a restore.** This is the only thing that turns "we have
-   backups" from a claim into a fact. Do this at least once before
-   you onboard the first paying customer:
-   - Pick a recent snapshot and create a new volume from it:
-     ```
-     fly volumes create sentinel_data_restore_test \
-       --snapshot-id <snap_id> -a sentinel-command
-     ```
-   - Spin up a temporary machine pointing at the restored volume
-     (or detach prod, attach the restore, verify, swap back —
-     riskier but cleaner).
-   - Confirm SQLite opens cleanly + tables are intact:
-     ```
-     fly ssh console -a sentinel-command \
-       -C "sqlite3 /data/sentinel.db '.tables'"
-     ```
-   - Sanity-check key tables have rows: `Camera`, `CameraNode`,
-     `Setting`, `Notification`.
+2. **Test a restore.** ✅ *Done 2026-09-07 — see the drill log in
+   `DISASTER_RECOVERY.md`.* Re-run quarterly. The procedure restores a
+   production `pg_dump` into a throwaway `postgres:18-alpine` container,
+   deliberately **not** the origin cluster, since restoring somewhere
+   else is the scenario the portable dump exists for:
+   ```
+   docker run -d --name pgdrill -e POSTGRES_PASSWORD=drill \
+     -e POSTGRES_DB=drill -p 15499:5432 postgres:18-alpine
+   DATABASE_URL=postgresql://postgres:drill@127.0.0.1:15499/drill \
+     bash backend/scripts/restore_db.sh <dump> --yes
+   ```
+   Sanity-check key tables have rows: `Camera`, `CameraNode`,
+   `Setting`, `Notification`.
 3. Document the restore procedure in
    `docs/runbooks/DISASTER_RECOVERY.md` (still unwritten — wait
    until you've done a real restore so you can capture what
@@ -389,7 +398,8 @@ a page.
 [X] Backup restore tested (item 7) — Fly snapshot restore VERIFIED 2026-07-06;
     the opensentry.db/sentinel.db mismatch found during the drill was FIXED same
     day (DATABASE_URL secret repointed to sentinel.db, app healthy, backup job now
-    succeeds). Optional: set BACKUP_ENCRYPTION_KEY for off-platform copies.
+    succeeds). BACKUP_ENCRYPTION_KEY deliberately left unset — Fly-only
+    backups is an accepted decision, not an outstanding task.
 [ ] DPA + sub-processors PDF on file with lawyer signoff (item 6)
 [ ] Status page live and pointed at /api/health/ready (item 3)
 [X] Sentry alerts confirmed firing in production env (item 5)        — done 2026-05-03
