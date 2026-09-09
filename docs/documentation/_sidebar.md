@@ -10,6 +10,7 @@
   - [Security Policy](command/SECURITY)
   - [Launch Handoff](command/docs/LAUNCH_HANDOFF)
   - [Overview](command/docs/README)
+  - [Sentinel Agent](command/docs/SENTINEL_AGENT)
   - [0001 Sync Schema Vs Alembic](command/docs/adr/0001-sync-schema-vs-alembic)
   - [0002 Viewer Hour Billing](command/docs/adr/0002-viewer-hour-billing)
   - [Data Processing Agreement](command/docs/legal/DPA)
