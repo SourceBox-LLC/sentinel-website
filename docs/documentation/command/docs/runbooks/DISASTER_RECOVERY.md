@@ -13,6 +13,20 @@ the **`sentinel_command` database on the managed `sentinel-postgres`
 Postgres cluster**. Recovery is **restore from a backup**, so the backup
 must exist and the restore must have been rehearsed.
 
+## Start here — which situation is this?
+
+| Situation | Go to |
+| --------- | ----- |
+| The hosted database is lost, corrupted, or wrong | [Restore procedure](#restore-procedure) |
+| A machine or volume is gone | [Restore procedure](#restore-procedure) |
+| A **self-hosted** customer lost their local database | [Restoring from the cloud mirror](#self-hosted-installs-restoring-from-the-cloud-mirror) |
+| You need to know whether a backup even exists | [Backups: how they're produced](#backups-how-theyre-produced) |
+| Nothing is broken — you're preparing | [The one thing to do before launch](#the-one-thing-to-do-before-launch) · [Rehearsal drill](#rehearsal-drill-do-this-before-launch-then-quarterly) |
+| The service is broken but the **data is fine** | [ON_CALL.md](ON_CALL.md) — not this file |
+
+**Before you restore anything:** a restore is destructive and a wrong one compounds the damage. Read the whole [Restore procedure](#restore-procedure) section before running its first command.
+
+
 > 🔀 **Migrated to Postgres (2026-09-07).** Until this date the hosted
 > database was a single SQLite file on the `sentinel_data` Fly volume,
 > and this runbook was written around that. What changed:
@@ -254,7 +268,7 @@ bash /app/scripts/restore_db.sh /data/backups/sentinel-<stamp>.dump
 # 4. Start the app and verify BEFORE deleting the pre-restore dump.
 exit
 fly machine start <machine-id> -a sentinel-command
-curl -fsS https://sentinel-command.com/api/health/ready
+curl -fsS https://app.sentinel-command.com/api/health/ready
 ```
 
 Then sanity-check in the dashboard: an org loads, cameras list, a known
@@ -293,11 +307,23 @@ runbook used to say nothing about them.
 | `sentinel_sync` | ❌ none — snapshots only | — | snapshot restore (below) |
 
 **Why Sync has no dump job, deliberately.** The other two write their
-dump to a Fly volume. `sentinel-sync` has no volume, and it runs **two
-machines** — Fly volumes are single-attach, so giving it one would pin
-it to a single machine. That trades away real redundancy to gain a
-second copy of data the cluster snapshot already holds. Not worth it;
-don't "fix" this in a later pass without re-reading this paragraph.
+dump to a Fly volume. `sentinel-sync` has none, and giving it one would
+pin it to a single machine, because Fly volumes are single-attach.
+
+The original reasoning here was that Sync ran **two machines**, so a
+volume would cost real redundancy. That is no longer the fact pattern —
+it was scaled to one machine on 2026-09-09 and now scales to zero
+between its 30-minute pushes, so there is no redundancy left to trade
+away. The conclusion survives the reason changing, on stronger grounds:
+
+`sentinel_sync` holds a **mirror**, not a source of truth. Every row in
+it was pushed from a self-hosted operator's local SQLite, which remains
+authoritative, and `push_pending_changes` only advances its cursors on
+confirmed success. Losing this database entirely costs one sync cycle;
+the operators re-push. A dump job would be a second copy of data the
+cluster snapshot already holds, of data that is itself already a copy.
+
+Don't "fix" this in a later pass without re-reading this paragraph.
 
 **Restoring `sentinel_sync` therefore means a snapshot restore**, which
 is cluster-level and brings back all three databases at once:
