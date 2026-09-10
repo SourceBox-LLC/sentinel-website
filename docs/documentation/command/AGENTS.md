@@ -2,7 +2,31 @@
 
 Sentinel Command Center — cloud dashboard for managing and viewing security cameras under the **Sentinel by SourceBox** product brand. FastAPI backend + React 19 frontend with Clerk authentication. Live video is streamed through an in-memory segment cache — **no Tigris, no S3, no presigned URLs in the live path**.
 
-> **Brand-history note for grep-discoverability:** the product has carried three names — `OpenSentry` (early), `SourceBox Sentry` (mid), and `Sentinel by SourceBox` (current, from May 2026 onward). The `Sentinel AI` name is reserved specifically for the AI-agent feature. Both GitHub repos were renamed in May 2026: Command Center `OpenSentry-Command` → `Sentinel-Command`, and CameraNode `opensentry-cloud-node` → `Sentinel-CameraNode` (note the deliberate "CameraNode" — the repo name now describes the artifact more literally, while the binary, install paths, and product UI keep saying "CameraNode"). GitHub auto-redirects the old URLs, so any hardcoded reference in a release artifact / cached doc / external bookmark continues to resolve. Identifiers preserved verbatim across the entire rebrand (do **not** rename these without a migration plan): the binary name `sourcebox-sentry-cameranode`, the env-var prefix `SOURCEBOX_SENTRY_*`, the Windows install path `C:\ProgramData\SourceBoxSentry\`, the AES key-derivation domain string `opensentry-cameranode-machine-id-v2` (see CameraNode `database.rs::KEY_DOMAIN_V2`), and the production hostname `sentinel-command.com` (tied to the Fly app, decoupled from the repo rename).
+> **Brand-history note for grep-discoverability:** the product has carried three names — `OpenSentry` (early), `SourceBox Sentry` (mid), and `Sentinel by SourceBox` (current, from May 2026 onward). The `Sentinel AI` name is reserved specifically for the AI-agent feature. Both GitHub repos were renamed in May 2026: Command Center `OpenSentry-Command` → `Sentinel-Command`, and CameraNode `opensentry-cloud-node` → `Sentinel-CameraNode` (note the deliberate "CameraNode" — the repo name now describes the artifact more literally, while the binary, install paths, and product UI keep saying "CameraNode"). GitHub auto-redirects the old URLs, so any hardcoded reference in a release artifact / cached doc / external bookmark continues to resolve. Identifiers preserved verbatim across the rebrands (do **not** rename these without a migration plan): the env-var prefix `SOURCEBOX_SENTRY_*`, the Windows install path `C:\ProgramData\SourceBoxSentry\`, and the production hostname `sentinel-command.com` (tied to the Fly app, decoupled from the repo rename).
+
+Two identifiers that this list previously claimed were preserved **were renamed on 2026-09-09**, while the product had zero installs — the only window in which either is free:
+
+- The binary, `sourcebox-sentry-cloudnode` → `sourcebox-sentry-cameranode`. It had lagged the repo by a full brand, so release assets shipped under a dead name and the installer carried a rename workaround to hide it.
+- The AES key-derivation domain, `opensentry-cloudnode-machine-id-v2` → `opensentry-cameranode-machine-id-v2` (CameraNode `database.rs::KEY_DOMAIN_V2`). **This list already recorded the `cameranode` spelling, which was simply wrong** — the code had always said `cloudnode`. It is accurate now, but was not before, so do not treat a match here as evidence.
+
+That second one is the dangerous kind: it is a domain separator, and changing it means an existing encrypted `node.db` silently fails to open — no error, it just does not decrypt. From the first real install onward it needs a migration path, not an edit.
+
+## Contents
+
+Long reference — jump rather than scroll.
+
+| | |
+| --- | --- |
+| [Repository layout](#repository-layout--one-app-two-process-groups) — one app, two process groups | [Authentication](#authentication) — six credential types |
+| [Build & Run](#build--run) | [Data Models](#data-models) |
+| [Configuration](#configuration) | [API Routes](#api-routes) |
+| [Project Structure](#project-structure) | [MCP Server](#mcp-server) — tools, scope middleware |
+| [Architecture](#architecture) — request flow, video pipeline | [Plan Enforcement](#plan-enforcement) |
+| [CORS](#cors) · [Rate Limiting](#rate-limiting) | [Background Loops](#background-loops) |
+| [Webhook Handling](#webhook-handling) | [Key Patterns](#key-patterns) |
+| [Setup Scripts](#setup-scripts) · [Key Dependencies](#key-dependencies) | [Development Notes](#development-notes) |
+
+Wider than this file: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) covers how Command Center relates to the other services. The AI agent has its own reference at [docs/SENTINEL_AGENT.md](docs/SENTINEL_AGENT.md).
 
 ## Repository layout — one app, two process groups
 
@@ -24,9 +48,7 @@ Four rules follow, and breaking any of them breaks a deploy:
 3. **`[processes]` overrides the Dockerfile `CMD`.** The `app` command in `fly.toml` must stay in sync with that `CMD`.
 4. **CI path filtering is asymmetric.** `push` is filtered (docs and Markdown only); `pull_request` is **never** filtered. `master` requires `Backend tests (sqlite)`, `Backend tests (postgres)` and `Frontend audit + build`, and GitHub reports *no status at all* for a workflow a path filter skipped — so a filtered PR trigger would hang every PR that missed it, presenting as a stuck check rather than a config error.
 
-The agent machine is kept **warm** (`min_machines_running = 1`) rather than scaled to zero. Fly's proxy waits only ~8s for an auto-started machine to bind its port, and this process needs ~10s (Python + the MCP SDK + Sentry + a deferred LiteLLM import) — so an auto-started machine was declared unreachable and the wakeup came back `RemoteDisconnected`. It was ~7s before LiteLLM, i.e. always marginal. ~$2/month buys the problem away; see the comment on `[[services]]` in `fly.toml`.
-
-The agent is a separate **process group** rather than a thread in the web app because a run holds base64 frames for up to 270s, and the segment cache is already budgeted 384 MiB of the web machine's 1 GiB. Sharing one machine is how the OOM killer takes every org's streams down at once. Being a separate *app* was never what bought that isolation.
+The agent runs as a separate **process group** — its own machine, kept warm rather than scaled to zero. Both choices are deliberate and both have non-obvious reasons: memory contention with the segment cache, and a boot time that loses a race with Fly's proxy. Neither is restated here; see [docs/SENTINEL_AGENT.md](docs/SENTINEL_AGENT.md) for the agent's side and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#deployed-services-flyio) for how it compares to the services that *do* sleep.
 
 Self-hosting still works the same way: `python -m app.sentinel_agent` runs standalone with `AGENT_MODE=poll` and a per-org `osa_` key, needing no inbound connectivity. Agent docs are in `docs/SENTINEL_AGENT.md`. The code came from the `SourceBox-Sentinel` repo (archived 2026-09-09).
 
@@ -208,62 +230,47 @@ docs/                             # Supplementary docs that don't belong in READ
 
 frontend/
 ├── tests/                        # vitest + @testing-library/react + happy-dom
-│   ├── setup.js                  # @testing-library/jest-dom matchers + cleanup
+│   ├── setup.js                  # jest-dom matchers + cleanup
 │   ├── sanity.test.js            # runner + DOM + matcher wiring smoke
+│   ├── auth/local.test.jsx       # self-hosted login + background token refresh
 │   ├── services/api.test.js      # fetchWithAuth shape contract (4 wire shapes)
-│   ├── components/               # DocsDiagrams, UpgradeModal, EmptyState
-│   └── pages/DocsPage.test.jsx   # split structural smoke (every section id renders)
+│   ├── components/               # IncidentReportModal, UpgradeModal, OrgAuditLogPanel,
+│   │                             # InstallCameraNodeCard, CameraRecordingControls, HelpTooltip
+│   └── pages/                    # IncidentsPage, SettingsPage (camera groups), SignInPage (local)
 └── src/
     ├── pages/
-    │   ├── LandingPage.jsx           # Public landing page
-    │   ├── DashboardPage.jsx         # Camera grid with status cards + controls
-    │   ├── SettingsPage.jsx          # Nodes, groups, recording, danger zone
-    │   ├── McpPage.jsx               # MCP keys (scope picker) + activity (live SSE)
-    │   ├── IncidentsPage.jsx         # AI- and human-filed incident reports + create flow
-    │   ├── AdminPage.jsx             # Stream logs, MCP activity, audit trail
-    │   ├── PricingPage.jsx           # Public pricing tiers
-    │   ├── SecurityPage.jsx          # Public privacy + security claims page (/security)
-    │   ├── SentinelPage.jsx          # Sentinel agent dashboard — config (triggers,
-    │   │                              #   schedule, cooldown, scope), run history,
-    │   │                              #   manual "Run now"
-    │   ├── LegalPage.jsx             # /legal/:page — Terms, Privacy, etc.
-    │   ├── DocsPage.jsx              # /docs — slim composition shell that renders 19 sections
-    │   ├── docs/                     # one file per <section> on /docs (extracted from the
-    │   │                             # 1,747-line monolith); shared state lives in
-    │   │                             # docs/context.jsx (DocsProvider + OsTabs + useDocs)
+    │   ├── DashboardPage.jsx        # Camera grid with status cards + controls
+    │   ├── SettingsPage.jsx         # Nodes, groups, recording, notifications, danger zone
+    │   ├── McpPage.jsx              # MCP keys (scope picker) + activity (live SSE), AND the
+    │   │                            #   Sentinel agent surface: config, run history, manual
+    │   │                            #   "Run now", per-org `osa_` agent keys
+    │   ├── IncidentsPage.jsx        # AI- and human-filed incident reports + create flow
+    │   ├── AdminPage.jsx            # Stream logs, org audit, MCP activity, motion history
+    │   ├── IntegrationsPage.jsx     # Home Assistant integration keys
+    │   ├── PricingPage.jsx          # Plan tiers + upgrade
     │   ├── SignInPage.jsx / SignUpPage.jsx
-    │   └── TestHlsPage.jsx           # Admin-only HLS debug view
-    ├── components/
-    │   ├── HlsPlayer.jsx             # HLS.js player with Clerk JWT xhrSetup
-    │   ├── CameraCard.jsx            # Live thumbnail + status + actions
-    │   ├── IncidentReportModal.jsx   # Markdown + evidence viewer
+    │   └── TestHlsPage.jsx          # Admin-only HLS debug view
+    ├── components/                  # 27 files; the ones worth knowing:
+    │   ├── HlsPlayer.jsx            # hls.js player with Clerk JWT xhrSetup
+    │   ├── CameraCard.jsx           # Live thumbnail + status + actions
+    │   ├── AppSidebar.jsx           # Nav + plan badge + viewer-hours usage panel
+    │   ├── MotionEventsPanel.jsx    # Motion history (Admin → Motion tab)
+    │   ├── OrgAuditLogPanel.jsx     # Org audit trail (Admin → Organization Audit)
+    │   ├── IncidentReportModal.jsx  # Markdown + evidence viewer
     │   ├── NotificationBell.jsx     # Unread badge + inbox popover (SSE-fed)
-    │   ├── AddNodeModal.jsx          # Node creation flow (shows one-time API key)
+    │   ├── AddNodeModal.jsx         # Node creation flow (shows one-time API key)
     │   ├── KeyRotationModal.jsx     # Rotate node API key
-    │   ├── UpgradeModal.jsx          # Paywall prompt (plan gating)
-    │   ├── HeartbeatBanner.jsx       # "Waiting for first heartbeat" banner shown
-    │   │                             # after node creation; polls /api/nodes/{id}
-    │   │                             # until it sees a last_seen, persists its
-    │   │                             # dismissed state in localStorage
-    │   ├── WelcomeHero.jsx           # Dashboard empty-state hero — exports
-    │   │                             # AdminWelcomeHero (3-step "set up your first
-    │   │                             # camera" checklist) and MemberWelcomeHero
-    │   │                             # (capability-focused welcome for non-admins)
-    │   ├── Layout.jsx / PublicLayout.jsx
-    │   ├── LandingNav.jsx / LandingFooter.jsx
-    │   ├── ToastContainer.jsx / LoadingSpinner.jsx
-    │   ├── DocsDiagrams.jsx         # 8 inline-SVG diagrams embedded on /docs
-    │   │                             # (System Architecture / HLS Pipeline / Motion FSM /
-    │   │                             # Config Precedence / Incident Lifecycle / MCP Workflow /
-    │   │                             # Security Model rings / Dashboard IA tree)
-    │   └── EmptyState.jsx
+    │   ├── UpgradeModal.jsx         # Paywall prompt (plan gating)
+    │   ├── HeartbeatBanner.jsx      # "Waiting for first heartbeat" after node creation
+    │   └── WelcomeHero.jsx          # Dashboard empty-state hero (admin + member variants)
+    ├── auth/                        # Clerk / local-auth provider switch (VITE_AUTH_PROVIDER)
     ├── hooks/
-    │   ├── useNotifications.jsx      # SSE inbox + unread count
-    │   ├── useMotionAlerts.jsx       # Motion SSE + toast fan-out
-    │   ├── usePlanInfo.jsx           # Plan info + node quotas
-    │   ├── useSharedToken.jsx        # Shared Clerk token provider (HLS + fetch)
+    │   ├── useNotifications.jsx     # SSE inbox + unread count
+    │   ├── useMotionAlerts.jsx      # Motion SSE + toast fan-out
+    │   ├── usePlanInfo.jsx          # Plan info + node quotas
+    │   ├── useSharedToken.jsx       # Shared token provider (HLS + fetch)
     │   └── useToasts.jsx
-    └── services/api.js               # Typed client for every backend endpoint
+    └── services/api.js              # Typed client for every backend endpoint
 ```
 
 ## Architecture

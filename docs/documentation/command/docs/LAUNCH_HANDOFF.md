@@ -47,7 +47,7 @@ charges don't post, the dev-mode badge shows in the UI, and the
      -a sentinel-command
    ```
 4. Verify the Clerk webhook endpoint
-   `https://sentinel-command.com/api/webhooks/clerk` is
+   `https://app.sentinel-command.com/api/webhooks/clerk` is
    registered in the production Clerk app and signing secret is set
    (`CLERK_WEBHOOK_SECRET`). Test by upgrading a test org and
    confirming the `Setting(org_plan="pro")` row shows up.
@@ -90,10 +90,13 @@ the answer for those.
    above realistic volume for the operator-critical kinds).
 2. Verify a sending domain — Resend gives you 4 DNS records (SPF TXT,
    DKIM CNAMEs ×3, optional DMARC). 15-60 min for DNS to propagate.
-   Recommended subdomain: `notifications.sourceboxsentry.com` (keeps
-   marketing-email reputation isolated from transactional).
+   **This step is already done:** `sentinel-command.com` is verified,
+   with DKIM and SPF/Return-Path on `send.sentinel-command.com`. This
+   previously recommended `notifications.sourceboxsentry.com`, which is
+   the pre-rename brand and is *not* a verified sending domain — setting
+   `EMAIL_FROM_ADDRESS` to it would have failed every send.
 3. Configure a webhook in Resend → endpoint
-   `https://sentinel-command.com/api/webhooks/resend`. Copy the
+   `https://app.sentinel-command.com/api/webhooks/resend`. Copy the
    signing secret (starts with `whsec_`).
 4. Set the four Fly secrets:
    ```
@@ -110,9 +113,10 @@ the answer for those.
    support is a separate channel at `support@sentinel-command.com`.)
 5. Smoke test: kill a CameraNode for >90s, watch the test admin's inbox
    for the offline email, click the unsubscribe link, verify the
-   toggle flipped off in `/settings`. See plan file
-   `~/.claude/plans/gentle-coalescing-teacup.md` for the full motion
-   smoke test sequence.
+   toggle flipped off in `/settings`. Then repeat for motion: trigger a
+   camera, confirm the first-motion email arrives, and confirm a second
+   trigger inside the cooldown window produces a digest rather than a
+   second email.
 
 **Code is safe to keep deployed indefinitely** with `EMAIL_ENABLED=false`
 (the default). The worker still runs but the transport short-circuits

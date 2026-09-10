@@ -15,12 +15,32 @@ checks**, **Likely causes**, **Fix paths**, **When to escalate**.
 
 ---
 
+## Start here — what are you seeing?
+
+You know the symptom, not the scenario letter. Find the row, jump to the section.
+
+| What you're seeing | Go to |
+| ------------------ | ----- |
+| A Sentry alert fired | [A — Sentry alert](#scenario-a-sentry-alert-fired) |
+| One customer: "all my cameras are offline" | [B — cameras offline](#scenario-b-customer-reports-all-my-cameras-are-offline) |
+| One customer: "the stream won't play" | [C — stream won't play](#scenario-c-customer-reports-stream-wont-play) |
+| The app is slow, timing out, or the DB is unhappy | [D — database](#scenario-d-database-is-slow-unresponsive-or-out-of-disk) |
+| **Several unrelated** customers at once | [E — multi-customer](#scenario-e-multiple-unrelated-customers-reporting-issues-at-once) |
+| Signs of a breach or access you can't account for | [F — suspected breach](#scenario-f-suspected-data-breach-or-unauthorized-access) |
+| A customer asked to be deleted | [G — deletion request](#scenario-g-customer-requests-deletion-gdpr--ccpa-right-to-erase) |
+| Alerts aren't arriving in inboxes | [H — email](#scenario-h-email-isnt-sending-resend-transport-failures) |
+| A deploy went red | [I — CI deploy failing](#scenario-i-ci-deploy-is-failing) |
+| About to push and want to be careful | [J — pre-deploy check](#scenario-j-pre-deploy-sanity-check-before-pushing-master) |
+| **Data is missing, corrupted, or gone** | **[DISASTER_RECOVERY.md](DISASTER_RECOVERY.md)** — not this file |
+
+That last row matters: this runbook is for "the service is broken." If the *data* is gone, you are in the wrong document and the procedures here won't help.
+
 ## Quick reference
 
 | Tool / link | Why |
 |---|---|
-| https://sentinel-command.com/api/health | Liveness — is the process up? |
-| https://sentinel-command.com/api/health/detailed | DB ping latency, cache + queue depths |
+| https://app.sentinel-command.com/api/health | Liveness — is the process up? |
+| https://app.sentinel-command.com/api/health/detailed | DB ping latency, cache + queue depths |
 | `fly logs -a sentinel-command` | Application stderr/stdout |
 | `fly status -a sentinel-command` | Machine health + last deploy |
 | `fly ssh console -a sentinel-command` | Shell into the live machine |
@@ -223,7 +243,7 @@ self-hosted section applies to them, not this scenario.
    Check the "events" timeline for recent restarts.
 2. **`fly status -a sentinel-postgres`** — is the *database* up? This is
    the check that did not exist before the migration.
-3. `curl https://sentinel-command.com/api/health/detailed` —
+3. `curl https://app.sentinel-command.com/api/health/detailed` —
    look at:
    - `checks.database.status` and `latency_ms`
    - `checks.disk.percent_used` and `checks.disk.status` (segments now,
