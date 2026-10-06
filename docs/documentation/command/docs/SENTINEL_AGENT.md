@@ -38,7 +38,7 @@ Being a separate *app* was never what bought that isolation — a separate proce
 
 The reason was boot time, and that reason is gone. The Python agent took ~10s to bind its port (the interpreter, the MCP SDK, Sentry and a deferred LiteLLM import), which is longer than Fly's proxy waits for a machine it auto-started, so every wakeup against a stopped machine came back `RemoteDisconnected`. The binary answers `/health` about 40 ms after it is started (measured on a laptop, release build).
 
-It has **not** been switched to scale-to-zero anyway. What failed last time was a race against a proxy limit that is only observable in production, and nothing here has been measured there. The `[[services]]` comment in `fly.toml` says how to try it. Until then, one small machine warm is about $2/month. How the sibling services compare against the proxy's budget is in [ARCHITECTURE.md](ARCHITECTURE.md#deployed-services-flyio).
+It has **not** been switched to scale-to-zero anyway. What failed last time was a race against a proxy limit that is only observable in production, and nothing here has been measured there. The `[[services]]` comment in `fly.toml` says how to try it. Until then, one small machine warm is about $2/month. How the sibling services compare against the proxy's budget is in [ARCHITECTURE.md](/command/docs/ARCHITECTURE.md#deployed-services-flyio).
 
 ## Push or poll
 
@@ -72,14 +72,14 @@ The binary is in the Command Center image (`docker run --env-file agent.env <ima
 
 ## Plan tiers
 
-Gated end-to-end (UI, dispatcher, agent MCP auth) on the org's plan. Caps reset on the 1st of each calendar month, UTC.
+Gated end-to-end (UI, dispatcher, agent MCP auth) on the org's plan. Caps reset on the 1st of each calendar month, UTC. The numbers live in `backend-rs/src/api/sentinel_config.rs::cap_for_plan`.
 
 | Plan | Monthly runs | Note |
 | -------- | ------------ | ----------------------------------------- |
 | Free | 0 | Sentinel locked; UI shows upgrade banner. |
 | Pro | 100 | ~3 / day — casual home use. |
 | Pro Plus | 500 | ~16 / day — commercial-shaped use. |
-| Self-hosted | unlimited | Unlocked by a license key — see the License Service. |
+| Self-hosted | 500 | Needs a licence key (`SENTINEL_LICENSE_KEY`). |
 
 At the cap, dispatch pauses for the rest of the month. No overage billing; recordings, motion notifications, dashboard and MCP keep working.
 
@@ -90,7 +90,7 @@ A run is bounded at every layer. All bounds are env-tunable.
 - **Per-LLM-call timeout** — 120s, around the whole call rather than the HTTP request: a provider that accepts the connection then stalls mid-stream would otherwise hold the machine until the wall clock fires.
 - **Per-MCP-tool timeout** — 60s. Stuck tools surface to the LLM as an error result so the model can retry or pivot.
 - **Iteration cap** — 10 tool-call rounds per run (`MAX_AGENT_ITERATIONS`). Hitting it → outcome `error`, "investigation incomplete".
-- **Wall-clock cap** — 270s per wakeup, under Fly's 300s `kill_timeout` so cleanup runs before SIGKILL. `process_with_timeout` catches the timeout, identifies the in-flight run, and best-effort POSTs `complete` with `outcome=error` so the run lands terminal instead of stranding in `running`.
+- **Wall-clock cap** — 270s per wakeup (`processor.rs::DRAIN_TIMEOUT_SECONDS`). When it fires, the agent finds the in-flight run and posts `complete` with `outcome=error`, so the run ends cleanly instead of sitting in `running`. The figure was chosen under the old standalone app's 300s `kill_timeout`; this app sets none, and the `agent` machine never idles to a stop, so today only a deploy or restart cuts a run short, and the reaper below settles it.
 - **CC-side stranded-run reaper** — runs stuck in `running` for >20 minutes are marked `error` by Command Center. Catches the case where the agent crashes before its own cleanup fires.
 
 ## Endpoints
@@ -166,7 +166,7 @@ fly ssh console -a sentinel-command -s --process-group agent -C "curl -s localho
 | `AGENT_HOST` / `PORT` | `0.0.0.0` / `8080` | Where the agent's own server binds. |
 | `WEBHOOK_VERIFY_SIGNATURE` | `true` | Hard-disable HMAC for local dev. Always on in prod. |
 | `SENTRY_DSN` | unset | Error tracking. No-op when unset. |
-| `SENTRY_ENVIRONMENT` | `production` | Keeps local runs out of prod. |
+| `SENTRY_ENVIRONMENT` | `production` | Set it (for example, to `development`) on a local run, or its errors are reported as production's. |
 | `SENTRY_TRACES_SAMPLE_RATE` | `0.1` | Performance sampling. |
 
 ## Project structure

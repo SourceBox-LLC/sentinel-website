@@ -65,4 +65,4 @@ refresh without any reconfiguration.
 
 ## License
 
-[Apache License 2.0](LICENSE) © 2026 SourceBox LLC.
+[Apache License 2.0](https://github.com/SourceBox-LLC/Sentinel-HomeAssistant/blob/master/LICENSE) © 2026 SourceBox LLC.
