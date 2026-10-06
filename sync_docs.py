@@ -3,15 +3,33 @@
 Sync documentation from Sentinel repos into the sentinel-website docs mirror.
 
 Fetches READMEs, docs/ directories, and extra files from Sentinel-Command,
-Sentinel-CameraNode, and Sentinel-HomeAssistant via the GitHub API.
-Writes them into docs/documentation/ and generates _sidebar.md.
+Sentinel-CameraNode, and Sentinel-HomeAssistant via the GitHub API, writes
+them into docs/documentation/, rewrites their relative links so they work on
+this site, and generates _sidebar.md.
+
+Why links are rewritten: docsify resolves a relative link from the site root,
+not from the page it is on. A link written as `docs/ARCHITECTURE.md` inside
+`command/AGENTS.md` works on GitHub but goes to `/docs/ARCHITECTURE` here,
+which does not exist. So every relative link becomes:
+  - an absolute site link (`/command/docs/ARCHITECTURE.md`) when the target
+    is a mirrored Markdown file (or a directory with a mirrored README);
+  - a GitHub link when it isn't (source files, LICENSE, compose files);
+  - a raw GitHub URL for images.
+Links inside fenced code blocks are left alone.
 """
-import subprocess, json, base64, shutil
-from pathlib import Path
+import base64
+import json
+import posixpath
+import re
+import shutil
+import subprocess
 from datetime import datetime, timezone
+from pathlib import Path
 
 ROOT = Path(__file__).parent
 MIRROR = ROOT / "docs" / "documentation"
+ORG = "SourceBox-LLC"
+BRANCH = "master"
 
 REPOS = [
     {
@@ -20,6 +38,8 @@ REPOS = [
         "github": "Sentinel-Command",
         "files": ["README.md", "AGENTS.md", "CONTRIBUTING.md", "SECURITY.md", "CODE_OF_CONDUCT.md"],
         "dirs": ["docs"],
+        # Prompts for generated marketing images, not documentation.
+        "exclude": ["docs/image-specs/README.md"],
     },
     {
         "slug": "camera-node",
@@ -27,6 +47,7 @@ REPOS = [
         "github": "Sentinel-CameraNode",
         "files": ["README.md"],
         "dirs": ["docs"],
+        "exclude": [],
     },
     {
         "slug": "home-assistant",
@@ -34,7 +55,44 @@ REPOS = [
         "github": "Sentinel-HomeAssistant",
         "files": ["README.md"],
         "dirs": [],
+        "exclude": [],
     },
+]
+
+# The sidebar, grouped by what the reader came to do. Each entry is
+# (site path without .md, title). A page that exists but isn't listed here
+# lands under "More" rather than disappearing, so a new doc in a source repo
+# still shows up before anyone edits this list.
+SECTIONS = [
+    ("Get started", [
+        ("camera-node/README", "Install a CameraNode"),
+        ("command/README", "Command Center"),
+        ("home-assistant/README", "Home Assistant integration"),
+        ("camera-node/docs/runbooks/local-mode-setup", "CameraNode without the cloud (local mode)"),
+        ("camera-node/docs/runbooks/video-not-showing", "Troubleshooting: video not showing"),
+    ]),
+    ("How it works", [
+        ("command/docs/ARCHITECTURE", "System architecture"),
+        ("command/docs/SENTINEL_AGENT", "Sentinel AI agent"),
+        ("command/SECURITY", "Security policy"),
+    ]),
+    ("Developer reference", [
+        ("command/AGENTS", "Command Center internals"),
+        ("command/docs/README", "Command Center docs index"),
+        ("camera-node/docs/README", "CameraNode docs index"),
+        ("command/CONTRIBUTING", "Contributing"),
+        ("command/CODE_OF_CONDUCT", "Code of conduct"),
+    ]),
+    ("Operations", [
+        ("command/docs/runbooks/ON_CALL", "On-call runbook"),
+        ("command/docs/runbooks/DISASTER_RECOVERY", "Disaster recovery"),
+        ("command/docs/LAUNCH_HANDOFF", "Launch checklist"),
+    ]),
+    ("Decision records", "adr"),       # every page under an adr/ directory
+    ("Legal drafts", [
+        ("command/docs/legal/DPA", "Data processing agreement (draft)"),
+        ("command/docs/legal/SUB_PROCESSORS", "Sub-processors (draft)"),
+    ]),
 ]
 
 
@@ -47,7 +105,7 @@ def gh_api(path):
 
 
 def download_file(repo, filepath, outpath):
-    data = gh_api(f"repos/SourceBox-LLC/{repo}/contents/{filepath}")
+    data = gh_api(f"repos/{ORG}/{repo}/contents/{filepath}")
     if not data or data.get("type") != "file":
         return False
     content = base64.b64decode(data["content"])
@@ -56,93 +114,120 @@ def download_file(repo, filepath, outpath):
     return True
 
 
-def download_dir(repo, dirpath, outdir):
-    contents = gh_api(f"repos/SourceBox-LLC/{repo}/contents/{dirpath}")
+def download_dir(repo, dirpath, outdir, exclude):
+    contents = gh_api(f"repos/{ORG}/{repo}/contents/{dirpath}")
     if not isinstance(contents, list):
         return 0
     count = 0
     for item in contents:
         if item["type"] == "file" and item["name"].endswith(".md"):
+            if item["path"] in exclude:
+                continue
             if download_file(repo, item["path"], outdir / item["name"]):
                 count += 1
         elif item["type"] == "dir":
-            count += download_dir(repo, item["path"], outdir / item["name"])
+            count += download_dir(repo, item["path"], outdir / item["name"], exclude)
     return count
 
 
-def make_title(filename):
-    name = filename.replace(".md", "").replace("_", " ").replace("-", " ")
-    replacements = {
-        "README": "Overview",
-        "AGENTS": "Agent Guide",
-        "CONTRIBUTING": "Contributing",
-        "SECURITY": "Security Policy",
-        "CODE OF CONDUCT": "Code of Conduct",
-        "CHANGELOG": "Changelog",
-        "BUILD": "Build Guide",
-        "LAUNCH HANDOFF": "Launch Handoff",
-        "DISASTER RECOVERY": "Disaster Recovery",
-        "ON CALL": "On-Call Guide",
-        "DPA": "Data Processing Agreement",
-        "SUB PROCESSORS": "Sub-Processors",
-    }
-    for old, new in replacements.items():
-        name = name.replace(old, new)
-    words = name.split()
-    result = []
-    for w in words:
-        if len(w) <= 3 and w.isupper():
-            result.append(w)
-        else:
-            result.append(w.capitalize())
-    return " ".join(result)
+# ── Link rewriting ───────────────────────────────────────────────────
+
+MD_LINK = re.compile(r"(!?)\[([^\]]*)\]\(([^)\s]+)((?:\s+\"[^\"]*\")?)\)")
+HTML_LINK = re.compile(r"""(\b(?:href|src)=")([^"]+)(")""")
+FENCE = re.compile(r"^(```|~~~)")
 
 
-def collect_pages(repo_dir):
-    pages = []
-    if not repo_dir.exists():
-        return pages
-    for md in sorted(repo_dir.rglob("*.md")):
-        rel = md.relative_to(repo_dir)
-        if str(rel) == "README.md":
-            pages.append(("README", make_title("README")))
-        else:
-            link = str(rel).replace(".md", "")
-            title = make_title(md.stem)
-            pages.append((link, title))
-    return pages
+def is_external(url):
+    return url.startswith(("http://", "https://", "mailto:", "#", "/", "data:"))
 
 
-LANDING_PAGE = """# Sentinel Documentation
+def resolve(url, file_rel, repo, slug, mirrored, image):
+    """The URL a relative link should have on this site."""
+    path, _, frag = url.partition("#")
+    target = posixpath.normpath(posixpath.join(posixpath.dirname(file_rel), path))
+    if target.startswith(".."):
+        return url  # points outside the repo; leave it
+    anchor = f"#{frag}" if frag else ""
+    if image:
+        return f"https://raw.githubusercontent.com/{ORG}/{repo}/{BRANCH}/{target}"
+    if target.endswith(".md") and target in mirrored:
+        return f"/{slug}/{target}{anchor}"
+    readme = "README.md" if target == "." else f"{target}/README.md"
+    if readme in mirrored and (path.endswith("/") or "." not in posixpath.basename(target)):
+        return f"/{slug}/{readme}{anchor}"
+    looks_like_dir = path.endswith("/") or "." not in posixpath.basename(target)
+    kind = "tree" if looks_like_dir and target not in ("LICENSE", "NOTICE", "Dockerfile") else "blob"
+    where = "" if target == "." else f"/{target}"
+    return f"https://github.com/{ORG}/{repo}/{kind}/{BRANCH}{where}{anchor}"
 
-Documentation for the Sentinel platform — a private security camera system by SourceBox.
 
-## Components
+def rewrite_links(text, file_rel, repo, slug, mirrored):
+    out, in_fence = [], False
+    for line in text.split("\n"):
+        if FENCE.match(line.lstrip()):
+            in_fence = not in_fence
+            out.append(line)
+            continue
+        if in_fence:
+            out.append(line)
+            continue
 
-- **[Command Center](#/command/README)** — Cloud-hosted web dashboard for viewing cameras, managing organizations, and controlling access. Hosted on Fly.io with FastAPI + React 19.
-- **[Camera Node](#/camera-node/README)** — On-premises software that runs on your hardware, connects USB cameras, performs local motion detection, and uploads encrypted HLS segments.
-- **[Home Assistant](#/home-assistant/README)** — Home Assistant integration component for Sentinel.
+        def fix_md(m):
+            bang, label, url, title = m.groups()
+            if is_external(url):
+                return m.group(0)
+            return f"{bang}[{label}]({resolve(url, file_rel, repo, slug, mirrored, bool(bang))}{title})"
 
-## Architecture
+        def fix_html(m):
+            attr, url, end = m.groups()
+            if is_external(url):
+                return m.group(0)
+            image = attr.strip().startswith("src")
+            return f"{attr}{resolve(url, file_rel, repo, slug, mirrored, image)}{end}"
 
-Sentinel has two components with zero inbound ports:
+        line = MD_LINK.sub(fix_md, line)
+        line = HTML_LINK.sub(fix_html, line)
+        out.append(line)
+    return "\n".join(out)
 
-- **Camera Node** (your premises) → outbound HTTPS → **Command Center** (our cloud) → outbound HTTPS → **Browser** (any device)
 
-Recordings never leave your Camera Node. The cloud holds only a rolling 60-second in-memory HLS buffer.
+def first_heading(md_path):
+    for line in md_path.read_text(errors="ignore").splitlines():
+        if line.startswith("# "):
+            return re.sub(r"[`*]", "", line[2:]).strip()
+    return md_path.stem.replace("_", " ").replace("-", " ").title()
 
-## Key Docs
 
-- [Architecture Diagrams & ADRs](#/command/docs/adr/0001-sync-schema-vs-alembic)
-- [On-Call Guide](#/command/docs/runbooks/ON_CALL)
-- [Disaster Recovery](#/command/docs/runbooks/DISASTER_RECOVERY)
-- [Security Policy](#/command/SECURITY)
-- [Camera Node Setup](#/camera-node/docs/runbooks/local-mode-setup)
-- [Troubleshooting: Video Not Showing](#/camera-node/docs/runbooks/video-not-showing)
+# ── Landing page ─────────────────────────────────────────────────────
+
+LANDING_PAGE = """# Sentinel documentation
+
+Sentinel is a private security-camera system by SourceBox. A **CameraNode** runs on your own hardware, records locally, and streams live video outbound to **Command Center**, the dashboard you open in a browser. Your recordings never leave your CameraNode. The cloud holds a short live buffer in memory, plus the snapshots and short clips attached to incidents.
+
+## Get started
+
+1. **[Install a CameraNode](/camera-node/README.md)** on the computer your cameras are plugged into.
+2. **Sign up** at [app.sentinel-command.com](https://app.sentinel-command.com/sign-up), add a node in **Settings**, and paste its key into the CameraNode setup.
+3. Your cameras appear on the dashboard within a minute.
+
+Video not showing? See **[Troubleshooting: video not showing](/camera-node/docs/runbooks/video-not-showing.md)**.
+
+## The pieces
+
+- **[Command Center](/command/README.md)**: the dashboard, API, live-video relay, MCP server and the Sentinel AI agent. Hosted by SourceBox, or run it yourself.
+- **[CameraNode](/camera-node/README.md)**: the software that runs on your hardware, captures your cameras, detects motion and records locally.
+- **[Home Assistant integration](/home-assistant/README.md)**: your Sentinel cameras inside Home Assistant.
+
+## Going deeper
+
+- **[System architecture](/command/docs/ARCHITECTURE.md)**: how the services fit together.
+- **[Sentinel AI agent](/command/docs/SENTINEL_AGENT.md)**: how the AI investigation works and how to run it yourself.
+- **[Security policy](/command/SECURITY.md)**: how to report a vulnerability.
+- **[Command Center internals](/command/AGENTS.md)**: the developer reference.
 
 ---
 
-*This documentation is auto-synced from the [Sentinel-Command](https://github.com/SourceBox-LLC/Sentinel-Command), [Sentinel-CameraNode](https://github.com/SourceBox-LLC/Sentinel-CameraNode), and [Sentinel-HomeAssistant](https://github.com/SourceBox-LLC/Sentinel-HomeAssistant) repositories every hour.*
+*These pages are copied from the [Sentinel-Command](https://github.com/SourceBox-LLC/Sentinel-Command), [Sentinel-CameraNode](https://github.com/SourceBox-LLC/Sentinel-CameraNode) and [Sentinel-HomeAssistant](https://github.com/SourceBox-LLC/Sentinel-HomeAssistant) repositories every hour.*
 """
 
 
@@ -156,65 +241,79 @@ def write_landing_page():
     (MIRROR / "README.md").write_text(LANDING_PAGE)
 
 
-# ── Main ──
-print(f"Sentinel docs sync — {datetime.now(timezone.utc).isoformat()}")
+# ── Main ─────────────────────────────────────────────────────────────
 
-# Preserve index.html, wipe everything else in the mirror dir
-if MIRROR.exists():
-    for item in MIRROR.iterdir():
-        if item.name != "index.html":
-            if item.is_dir():
-                shutil.rmtree(item)
-            else:
-                item.unlink()
-else:
-    MIRROR.mkdir(parents=True)
+def main():
+    print(f"Sentinel docs sync — {datetime.now(timezone.utc).isoformat()}")
 
-# Write the docsify landing page *after* the wipe so it always exists.
-write_landing_page()
+    # Preserve index.html, wipe everything else in the mirror dir
+    if MIRROR.exists():
+        for item in MIRROR.iterdir():
+            if item.name != "index.html":
+                if item.is_dir():
+                    shutil.rmtree(item)
+                else:
+                    item.unlink()
+    else:
+        MIRROR.mkdir(parents=True)
 
-sidebar_lines = [
-    "<!-- Auto-generated by sync_docs.py — do not edit manually -->",
-    "",
-    "- [Home](README)",
-    "",
-]
+    # Write the docsify landing page *after* the wipe so it always exists.
+    write_landing_page()
 
-total_files = 0
+    total_files = 0
+    pages = {}  # site path (no .md) -> title
 
-for repo in REPOS:
-    slug = repo["slug"]
-    print(f"\n=== {repo['name']} ===")
-    repo_dir = MIRROR / slug
-    repo_dir.mkdir(parents=True, exist_ok=True)
+    for repo in REPOS:
+        slug = repo["slug"]
+        print(f"\n=== {repo['name']} ===")
+        repo_dir = MIRROR / slug
+        repo_dir.mkdir(parents=True, exist_ok=True)
 
-    for f in repo["files"]:
-        if download_file(repo["github"], f, repo_dir / f):
-            print(f"  + {f}")
-            total_files += 1
+        for f in repo["files"]:
+            if download_file(repo["github"], f, repo_dir / f):
+                print(f"  + {f}")
+                total_files += 1
+        for d in repo["dirs"]:
+            count = download_dir(repo["github"], d, repo_dir / d, repo["exclude"])
+            if count:
+                print(f"  + {d}/ ({count} files)")
+                total_files += count
 
-    for d in repo["dirs"]:
-        count = download_dir(repo["github"], d, repo_dir / d)
-        if count:
-            print(f"  + {d}/ ({count} files)")
-            total_files += count
+        mirrored = {str(p.relative_to(repo_dir)) for p in repo_dir.rglob("*.md")}
+        for rel in sorted(mirrored):
+            md = repo_dir / rel
+            md.write_text(rewrite_links(md.read_text(errors="ignore"), rel, repo["github"], slug, mirrored))
+            pages[f"{slug}/{rel[:-3]}"] = first_heading(md)
 
-    pages = collect_pages(repo_dir)
-    sidebar_lines.append(f"- **{repo['name']}**")
-    has_readme = any(p[0] == "README" for p in pages)
-    if has_readme:
-        sidebar_lines.append(f"  - [Overview]({slug}/README)")
-    for link, title in pages:
-        if link == "README":
+    # ── Sidebar ──
+    lines = ["<!-- Auto-generated by sync_docs.py — do not edit manually -->", "", "- [Home](README)", ""]
+    listed = set()
+    for section, entries in SECTIONS:
+        if entries == "adr":
+            entries = [(p, t) for p, t in sorted(pages.items()) if "/adr/" in p]
+        present = [(p, t) for p, t in entries if p in pages]
+        if not present:
             continue
-        sidebar_lines.append(f"  - [{title}]({slug}/{link})")
-    sidebar_lines.append("")
+        lines.append(f"- **{section}**")
+        for path, title in present:
+            lines.append(f"  - [{title}]({path})")
+            listed.add(path)
+        lines.append("")
+    extra = [(p, t) for p, t in sorted(pages.items()) if p not in listed]
+    if extra:
+        lines.append("- **More**")
+        for path, title in extra:
+            lines.append(f"  - [{title}]({path})")
+        lines.append("")
+    lines.append("- [Report a bug](https://github.com/SourceBox-LLC/Sentinel-Command/issues)")
+    lines.append("- [Edit on GitHub](https://github.com/SourceBox-LLC/sentinel-website)")
+    lines.append("")
+    (MIRROR / "_sidebar.md").write_text("\n".join(lines))
 
-sidebar_lines.append("- [Report a Bug](https://github.com/SourceBox-LLC/Sentinel-Command/issues)")
-sidebar_lines.append("- [Edit on GitHub](https://github.com/SourceBox-LLC/sentinel-website)")
-sidebar_lines.append("")
+    print(f"\nGenerated _sidebar.md ({len(lines)} lines)")
+    print(f"Total docs synced: {total_files} markdown files")
+    print("Sync complete!")
 
-(MIRROR / "_sidebar.md").write_text("\n".join(sidebar_lines))
-print(f"\nGenerated _sidebar.md ({len(sidebar_lines)} lines)")
-print(f"Total docs synced: {total_files} markdown files")
-print("Sync complete!")
+
+if __name__ == "__main__":
+    main()
