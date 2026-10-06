@@ -2,36 +2,41 @@
 
 - [Home](README)
 
-- **Command Center**
-  - [Overview](command/README)
-  - [Agent Guide](command/AGENTS)
-  - [Code Of Conduct](command/CODE_OF_CONDUCT)
+- **Get started**
+  - [Install a CameraNode](camera-node/README)
+  - [Command Center](command/README)
+  - [Home Assistant integration](home-assistant/README)
+  - [CameraNode without the cloud (local mode)](camera-node/docs/runbooks/local-mode-setup)
+  - [Troubleshooting: video not showing](camera-node/docs/runbooks/video-not-showing)
+
+- **How it works**
+  - [System architecture](command/docs/ARCHITECTURE)
+  - [Sentinel AI agent](command/docs/SENTINEL_AGENT)
+  - [Security policy](command/SECURITY)
+
+- **Developer reference**
+  - [Command Center internals](command/AGENTS)
+  - [Command Center docs index](command/docs/README)
+  - [CameraNode docs index](camera-node/docs/README)
   - [Contributing](command/CONTRIBUTING)
-  - [Security Policy](command/SECURITY)
-  - [Architecture](command/docs/ARCHITECTURE)
-  - [Launch Handoff](command/docs/LAUNCH_HANDOFF)
-  - [Overview](command/docs/README)
-  - [Sentinel Agent](command/docs/SENTINEL_AGENT)
-  - [0001 Sync Schema Vs Alembic](command/docs/adr/0001-sync-schema-vs-alembic)
-  - [0002 Viewer Hour Billing](command/docs/adr/0002-viewer-hour-billing)
-  - [Overview](command/docs/image-specs/README)
-  - [Data Processing Agreement](command/docs/legal/DPA)
-  - [Sub-processors](command/docs/legal/SUB_PROCESSORS)
-  - [Disaster Recovery](command/docs/runbooks/DISASTER_RECOVERY)
-  - [On-call Guide](command/docs/runbooks/ON_CALL)
+  - [Code of conduct](command/CODE_OF_CONDUCT)
 
-- **Camera Node**
-  - [Overview](camera-node/README)
-  - [Overview](camera-node/docs/README)
-  - [0001 Pi Software Encoding](camera-node/docs/adr/0001-pi-software-encoding)
-  - [0002 Machine Id Encryption Key](camera-node/docs/adr/0002-machine-id-encryption-key)
-  - [0003 Sqlite Recording Store](camera-node/docs/adr/0003-sqlite-recording-store)
-  - [0004 Installer Binary Integrity](camera-node/docs/adr/0004-installer-binary-integrity)
-  - [Local Mode Setup](camera-node/docs/runbooks/local-mode-setup)
-  - [Video Not Showing](camera-node/docs/runbooks/video-not-showing)
+- **Operations**
+  - [On-call runbook](command/docs/runbooks/ON_CALL)
+  - [Disaster recovery](command/docs/runbooks/DISASTER_RECOVERY)
+  - [Launch checklist](command/docs/LAUNCH_HANDOFF)
 
-- **Home Assistant**
-  - [Overview](home-assistant/README)
+- **Decision records**
+  - [ADR 0001: Raspberry Pi uses libx264 software encoding, not h264_v4l2m2m](camera-node/docs/adr/0001-pi-software-encoding)
+  - [ADR 0002: Machine-ID-derived key for at-rest encryption](camera-node/docs/adr/0002-machine-id-encryption-key)
+  - [ADR 0003: SQLite for recording + snapshot storage](camera-node/docs/adr/0003-sqlite-recording-store)
+  - [ADR 0004: Installer binary integrity — HTTPS + GitHub trust, signing deferred](camera-node/docs/adr/0004-installer-binary-integrity)
+  - [ADR 0001: Lightweight sync_schema instead of Alembic](command/docs/adr/0001-sync-schema-vs-alembic)
+  - [ADR 0002: Viewer-hours per month is the real tier differentiator](command/docs/adr/0002-viewer-hour-billing)
 
-- [Report a Bug](https://github.com/SourceBox-LLC/Sentinel-Command/issues)
+- **Legal drafts**
+  - [Data processing agreement (draft)](command/docs/legal/DPA)
+  - [Sub-processors (draft)](command/docs/legal/SUB_PROCESSORS)
+
+- [Report a bug](https://github.com/SourceBox-LLC/Sentinel-Command/issues)
 - [Edit on GitHub](https://github.com/SourceBox-LLC/sentinel-website)

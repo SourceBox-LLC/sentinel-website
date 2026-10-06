@@ -152,7 +152,7 @@ Authentication: the server binds to `127.0.0.1` in Connected mode
 (localhost-only, no session needed) and to `0.0.0.0` in Local mode
 (any device on the LAN) — LAN exposure requires a local-admin password
 set at setup time, checked via a login page in front of the dashboard.
-See [docs/runbooks/local-mode-setup.md](docs/runbooks/local-mode-setup.md)
+See [docs/runbooks/local-mode-setup.md](/camera-node/docs/runbooks/local-mode-setup.md)
 for the threat model and discovery options.
 
 Repeated wrong passwords are throttled: after 5 consecutive failures
@@ -179,7 +179,7 @@ Camera Node also runs a full-screen terminal dashboard showing camera status, up
 
 The status bar surfaces a `[LOCAL]` or `[PRO PLUS]` mode badge plus the URLs to click. In Local mode you see the LAN URL (`http://<lan-ip>:8080`); in Connected mode you see both the local URL and the Command Center URL, joined by `·`. Both URLs are OSC 8 terminal hyperlinks — modern terminals (Windows Terminal, iTerm2, kitty, WezTerm, GNOME Terminal, tmux ≥3.4) render them as Ctrl/Cmd-click links. Older terminals strip the escape sequences and show the bare URL text.
 
-In **Connected mode** the log buffer also includes a per-heartbeat diagnostic line like `Heartbeat: 1 cam in policy (1 on)` so you can see at a glance what Command Center is telling the node about recording policy. If you click **Record** in CC and the next heartbeat still reports `(0 on)`, the bug is CC-side (the `continuous_24_7` flag isn't flipping). If it flips to `(1 on)` and a `Recording started — <camera_id>` transition log follows, the archive is being written. See [docs/runbooks/local-mode-setup.md](docs/runbooks/local-mode-setup.md) for the troubleshooting flow.
+In **Connected mode** the log buffer also includes a per-heartbeat diagnostic line like `Heartbeat: 1 cam in policy (1 on)` so you can see at a glance what Command Center is telling the node about recording policy. If you click **Record** in CC and the next heartbeat still reports `(0 on)`, the bug is CC-side (the `continuous_24_7` flag isn't flipping). If it flips to `(1 on)` and a `Recording started — <camera_id>` transition log follows, the archive is being written. See [docs/runbooks/local-mode-setup.md](/camera-node/docs/runbooks/local-mode-setup.md) for the troubleshooting flow.
 
 Type `/` and press **Enter** to open the command menu.
 
@@ -523,7 +523,7 @@ These power the embedded SPA at `http://<node-ip>:8080/`. Same shape in both mod
 Whether a session is required depends on the bind address, not the mode label:
 
 - **`bind = 127.0.0.1`** (Connected mode's default): only same-host processes can reach the server at all, so no session is required. Anyone with shell access on the box could already wipe `data/node.db`, so the additional surface is zero.
-- **`bind = 0.0.0.0`** (Local mode, always — or Connected mode with `--lan-streaming`): any device on the LAN could otherwise read live HLS, snapshots, and recordings, or toggle the local recording flag — so a local-admin password is **mandatory** whenever this bind is chosen (the setup wizard won't let you skip it). Every route above except `/health`, `/api/auth/login`, and `/api/auth/logout` — plus `/hls/*` — requires a valid session cookie in this case (`/api/auth/refresh` included: an existing valid session is what proves you're allowed to refresh it). **Still don't expose this server to the public internet** — it's LAN-appropriate auth, not a perimeter. See [docs/runbooks/local-mode-setup.md](docs/runbooks/local-mode-setup.md) for the full threat model and discovery options.
+- **`bind = 0.0.0.0`** (Local mode, always — or Connected mode with `--lan-streaming`): any device on the LAN could otherwise read live HLS, snapshots, and recordings, or toggle the local recording flag — so a local-admin password is **mandatory** whenever this bind is chosen (the setup wizard won't let you skip it). Every route above except `/health`, `/api/auth/login`, and `/api/auth/logout` — plus `/hls/*` — requires a valid session cookie in this case (`/api/auth/refresh` included: an existing valid session is what proves you're allowed to refresh it). **Still don't expose this server to the public internet** — it's LAN-appropriate auth, not a perimeter. See [docs/runbooks/local-mode-setup.md](/camera-node/docs/runbooks/local-mode-setup.md) for the full threat model and discovery options.
 
 The snapshot route validates `camera_id` against the dashboard's known set before touching the filesystem to defeat path-traversal payloads. `find_latest_segment` additionally canonicalises the chosen segment and refuses anything that doesn't live under the camera's HLS dir as defence-in-depth.
 
@@ -697,7 +697,7 @@ You may need to grant camera access in **System Settings > Privacy & Security > 
 
 ## Troubleshooting
 
-For the full end-to-end "live video isn't showing up in the dashboard" workflow, see [`docs/runbooks/video-not-showing.md`](docs/runbooks/video-not-showing.md). The most common causes are also captured below.
+For the full end-to-end "live video isn't showing up in the dashboard" workflow, see [`docs/runbooks/video-not-showing.md`](/camera-node/docs/runbooks/video-not-showing.md). The most common causes are also captured below.
 
 <details>
 <summary><strong>No cameras detected</strong></summary>
@@ -815,7 +815,7 @@ The Camera Node dashboard's `STREAMING` status and the ↑ segs counter only pro
 
 ## License
 
-Licensed under the [GNU General Public License v3.0](LICENSE).
+Licensed under the [GNU General Public License v3.0](https://github.com/SourceBox-LLC/Sentinel-CameraNode/blob/master/LICENSE).
 
 Camera Node uses GPL-3.0 to ensure users can always inspect, modify, and verify what runs on their cameras. For commercial licensing, contact [SourceBox LLC](https://github.com/SourceBox-LLC).
 
