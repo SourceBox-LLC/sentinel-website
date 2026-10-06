@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sentinel — Private Security Camera System</title>
-  <meta name="description" content="Watch your cameras from anywhere — without handing your footage to a vendor's AI. Motion detection runs on your hardware. Recordings stay yours.">
+  <meta name="description" content="Watch your cameras from anywhere. Motion detection runs on your hardware, AI only looks if you turn it on, and recordings stay yours.">
   <meta property="og:title" content="Sentinel — Private Security Camera System">
-  <meta property="og:description" content="Cloud-hosted surveillance where your footage never leaves your network for AI. Open source, encrypted at rest, multi-tenant from day one.">
+  <meta property="og:description" content="Watch your cameras from anywhere while recordings stay on your own hardware. Open source, encrypted at rest, AI only if you turn it on.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://sentinel-command.com/images/og-card.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Sentinel — Private Security Camera System">
-  <meta name="twitter:description" content="Cloud-hosted surveillance where your footage never leaves your network. Open source.">
+  <meta name="twitter:description" content="Watch your cameras from anywhere while recordings stay on your own hardware. Open source.">
   <meta name="twitter:image" content="https://sentinel-command.com/images/og-card.jpg">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230a0a0f'/><text x='50' y='68' font-size='52' font-weight='700' text-anchor='middle' fill='%2322c55e' font-family='sans-serif'>S</text></svg>">
   <script type="importmap">
@@ -351,7 +351,7 @@
     <div class="hero-content">
       <div class="hero-badge"><span class="dot"></span> Cloud-Hosted · Multi-Tenant · Open Source</div>
       <h1>Your cameras,<br><span class="grad">your footage</span>, your control.</h1>
-      <p>Watch your cameras from anywhere — without handing your footage to a vendor's AI. Motion detection runs on your hardware. <strong>Recordings stay yours.</strong></p>
+      <p>Watch your cameras from anywhere. Motion detection runs on your hardware, and AI only looks at your cameras if you turn it on. <strong>Recordings stay yours.</strong></p>
       <div class="hero-ctas">
         <a href="https://app.sentinel-command.com/sign-up" class="btn btn-green">Get Started Free</a>
         <a href="https://app.sentinel-command.com" class="btn btn-ghost">View Live App</a>
@@ -471,12 +471,12 @@
         <div class="reveal">
           <span class="label">Privacy by design</span>
           <h2 class="h2">Your recordings never<br>leave your <span class="grad">Camera Node.</span></h2>
-          <p class="sub">Cloud security cameras stream every frame to a vendor's servers. Your Camera Node is different — it sits on your network, records to its own encrypted disk, and runs motion analysis locally. The cloud only ever holds a rolling 60-second live buffer in memory.</p>
+          <p class="sub">Cloud security cameras stream every frame to a vendor's servers. Your Camera Node is different — it sits on your network, records to its own encrypted disk, and runs motion analysis locally. The cloud holds a rolling 60-second live buffer in memory, plus any snapshots and clips saved to an incident.</p>
           <ul class="privacy-pts">
             <li><span class="chk">✓</span><div><strong>Motion detection runs locally</strong><span>FFmpeg threshold detection on your Camera Node. Pixel math, not ML.</span></div></li>
             <li><span class="chk">✓</span><div><strong>Recordings are encrypted at rest</strong><span><code>AES-256-GCM</code> with a key derived from your device's OS machine ID.</span></div></li>
             <li><span class="chk">✓</span><div><strong>No analytics, no ad networks, no data brokers</strong><span>Verifiable in our source with a single grep.</span></div></li>
-            <li><span class="chk">✓</span><div><strong>We don't hold your video</strong><span>Recordings live on your Camera Node, not our cloud. If law enforcement asks for footage, they have to ask you.</span></div></li>
+            <li><span class="chk">✓</span><div><strong>We don't hold your recordings</strong><span>Recordings live on your Camera Node, not our cloud, so requests for footage go to you. Only snapshots and clips saved to an incident are stored with us. <a href="legal/privacy#video">Details</a></span></div></li>
           </ul>
         </div>
       </div>
@@ -621,11 +621,11 @@
       <div class="fgrid">
         <div class="fbrand">
           <div class="nav-brand"><span class="s">Sentinel</span> by SourceBox</div>
-          <p>A private security camera system. Cloud-hosted surveillance where your footage never leaves your network for AI. Open source, encrypted at rest, multi-tenant from day one.</p>
+          <p>A private security camera system. Watch from anywhere while recordings stay on your own hardware. Open source, encrypted at rest, multi-tenant from day one.</p>
         </div>
         <div class="fcol"><h5>Product</h5><ul><li><a href="#features">Features</a></li><li><a href="#privacy">Privacy</a></li><li><a href="#architecture">Architecture</a></li><li><a href="#mcp">MCP</a></li><li><a href="documentation/">Docs</a></li></ul></div>
-        <div class="fcol"><h5>Resources</h5><ul><li><a href="https://sentinel-command.com">Live App</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command">Command Center</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode">Camera Node</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-HomeAssistant">Home Assistant</a></li></ul></div>
-        <div class="fcol"><h5>Community</h5><ul><li><a href="https://sentinel-command.com/security">Security</a></li><li><a href="https://app.sentinel-command.com/pricing">Pricing</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command/issues">Report a bug</a></li><li><a href="https://sentinel-command.com/legal/terms">Terms</a></li></ul></div>
+        <div class="fcol"><h5>Resources</h5><ul><li><a href="https://app.sentinel-command.com">Live App</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command">Command Center</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode">Camera Node</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-HomeAssistant">Home Assistant</a></li></ul></div>
+        <div class="fcol"><h5>Community</h5><ul><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/SECURITY.md">Security</a></li><li><a href="https://app.sentinel-command.com/pricing">Pricing</a></li><li><a href="https://github.com/SourceBox-LLC/Sentinel-Command/issues">Report a bug</a></li><li><a href="legal/terms">Terms</a></li><li><a href="legal/privacy">Privacy Policy</a></li></ul></div>
       </div>
       <div class="footer-star reveal">
         <a href="https://github.com/SourceBox-LLC/Sentinel-Command" class="star-cta" target="_blank" rel="noopener">

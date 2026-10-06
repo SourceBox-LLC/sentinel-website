@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy · Sentinel by SourceBox</title>
+  <meta name="description" content="What Sentinel by SourceBox collects, where it goes, how long it is kept, and how to export or delete it.">
+  <link rel="canonical" href="https://sentinel-command.com/legal/privacy">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230a0a0f'/><text x='50' y='68' font-size='52' font-weight='700' text-anchor='middle' fill='%2322c55e' font-family='sans-serif'>S</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="legal.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span>Sentinel</span><span class="by"> by SourceBox</span></a>
+    <nav aria-label="Legal">
+      <a href="terms">Terms</a>
+      <a href="privacy" aria-current="page">Privacy</a>
+      <a href="/documentation/">Docs</a>
+      <a class="nav-app" href="https://app.sentinel-command.com">Open the app</a>
+    </nav>
+  </header>
+
+  <div class="page">
+    <details class="toc" id="toc">
+      <summary>Contents</summary>
+      <ol>
+        <li><a href="#who">Who we are</a></li>
+        <li><a href="#video">Video: what we hold</a></li>
+        <li><a href="#collect">What we collect</a></li>
+        <li><a href="#sentinel-ai">Sentinel AI</a></li>
+        <li><a href="#use">How we use it</a></li>
+        <li><a href="#admins">What your admins can see</a></li>
+        <li><a href="#sharing">Who we share it with</a></li>
+        <li><a href="#retention">How long we keep it</a></li>
+        <li><a href="#your-rights">Export, deletion and your rights</a></li>
+        <li><a href="#on-camera">People on camera</a></li>
+        <li><a href="#self-hosted">Self-hosted installs</a></li>
+        <li><a href="#cookies">Cookies and browser storage</a></li>
+        <li><a href="#security">Security</a></li>
+        <li><a href="#transfers">International transfers</a></li>
+        <li><a href="#regional">Regional rights</a></li>
+        <li><a href="#children">Children</a></li>
+        <li><a href="#changes">Changes to this policy</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ol>
+    </details>
+
+    <article>
+      <p class="eyebrow">Legal</p>
+      <h1>Privacy Policy</h1>
+      <p class="dates">Effective October 6, 2026</p>
+
+      <section class="summary" aria-labelledby="summary-heading">
+        <h2 id="summary-heading">The short version</h2>
+        <ul>
+          <li><strong>Your recordings stay on your CameraNode.</strong> Live video passes through our servers in memory, about the last 60 seconds per camera, and is never written to disk.</li>
+          <li><strong>We do store some images:</strong> snapshots and short clips saved as evidence on an incident. They stay until you delete the incident.</li>
+          <li><strong>Sentinel AI is off until an admin turns it on.</strong> While it is on, camera images go to our AI provider, Ollama Cloud, to be described.</li>
+          <li>We keep account details, activity logs and settings. Logs are deleted after 30, 90 or 365 days, depending on your plan.</li>
+          <li>No ads, no analytics, no tracking cookies, no data brokers. We don't sell your data or train AI on your video.</li>
+          <li>Admins can export or delete all of an organization's data from Settings at any time.</li>
+        </ul>
+      </section>
+
+      <h2 id="who"><span class="num">1.</span>Who we are</h2>
+      <p>This policy explains how <strong>SourceBox LLC</strong> ("<strong>SourceBox</strong>", "<strong>we</strong>", "<strong>us</strong>") handles personal information in Sentinel by SourceBox. It covers the hosted Command Center at <code>app.sentinel-command.com</code>, this website, and the licence and cloud-sync services we run for self-hosted installs. Capitalised terms not defined here have the meaning in our <a href="terms">Terms of Service</a>.</p>
+      <p><strong>Our two roles.</strong> Most of what Command Center holds (footage, camera data, logs about an organization's members) is processed <em>on behalf of the organization</em> that owns the cameras. For that data, the organization decides how it is used and is the "controller" (GDPR) or "business" (US state law), and we are its "processor" or "service provider". For account sign-up, billing, our website, and messages you send us, we decide how the data is used and are the controller.</p>
+
+      <h2 id="video"><span class="num">2.</span>Video: what we hold</h2>
+      <p>Because this is a camera product, here is exactly where video goes.</p>
+      <ul>
+        <li><strong>Recordings</strong> are stored only on your CameraNode, in a database encrypted with AES-256-GCM. We do not receive them and cannot read them.</li>
+        <li><strong>Live video</strong> is sent from your CameraNode to Command Center in one-second segments and played to signed-in members of your organization. We keep segments <strong>in memory only</strong>, about the last 60 seconds per camera, and drop them about a minute after a camera stops sending. Live video is never written to disk, object storage, or backups.</li>
+        <li><strong>Snapshots on request.</strong> A snapshot taken from the dashboard is saved on your CameraNode, not by us. Live images fetched by an MCP tool or by Home Assistant pass through our servers to that tool and are not kept.</li>
+        <li><strong>Incident evidence is the exception.</strong> When an incident is created by Sentinel AI, by an MCP tool, or by a person, JPEG snapshots and short video clips (taken from the live buffer) can be attached to it as evidence. <strong>We store those in our database until the incident is deleted.</strong></li>
+        <li><strong>Motion detection</strong> runs on your CameraNode. We receive only the camera, the time, and a motion score, never the frames.</li>
+      </ul>
+
+      <h2 id="collect"><span class="num">3.</span>What we collect</h2>
+
+      <h3>Your account</h3>
+      <p>Your name, email address, profile photo if you add one, and your organizations and roles. Sign-in is handled by Clerk, so we never see your password. Clerk also keeps session and security information, such as the device, browser and IP address you sign in from.</p>
+
+      <h3>Billing</h3>
+      <p>Your plan, subscription status, billing dates and whether a payment has failed. Card details are collected and stored by Stripe, through Clerk, and never reach our servers.</p>
+
+      <h3>Cameras and CameraNodes</h3>
+      <p>For each CameraNode: its name, hostname, local network address and port (unless you turn off local streaming), software version, status, last-seen time, and disk usage. For each camera: its name, group, status, video format, and recording settings. We store only a fingerprint (SHA-256 hash) of each CameraNode's key.</p>
+
+      <h3>Incidents and Sentinel AI runs</h3>
+      <p>Incident titles, summaries, reports, severity and status, plus their evidence (images, clips, and text notes). For each Sentinel AI run: what triggered it, the outcome, and a record of the steps the agent took.</p>
+
+      <h3>Activity logs</h3>
+      <ul>
+        <li><strong>Viewing log:</strong> who watched which camera, when, from which IP address, and with what browser.</li>
+        <li><strong>Audit log:</strong> security-relevant actions, such as creating keys or changing settings, with the user, IP address and time.</li>
+        <li><strong>MCP activity log:</strong> each call an AI assistant made, with the tool, key name, result, duration, and a short summary of its arguments.</li>
+        <li><strong>Motion events</strong> and <strong>notifications</strong> (your organization's inbox).</li>
+      </ul>
+
+      <h3>Email</h3>
+      <p>Emails we send for your organization (for example, "camera offline"): the recipient, subject, content and delivery status. If an address bounces or reports an email as spam, we add it to a list of addresses we never email again.</p>
+
+      <h3>Usage and settings</h3>
+      <p>Hours of live video watched per organization per month, used to apply plan limits. Organization settings such as time zone, notification choices and Sentinel AI settings.</p>
+
+      <h3>Technical data</h3>
+      <ul>
+        <li><strong>IP addresses</strong> are used to apply rate limits. These counters expire within an hour.</li>
+        <li><strong>Error reports</strong> go to Sentry, our error-tracking provider. They contain the error, the page or API path (without its query string), and your user ID, organization ID and plan. We do not add your name, email or IP address.</li>
+        <li><strong>Server logs</strong> from us and our hosting provider record requests and errors, and are kept briefly.</li>
+      </ul>
+
+      <h3>This website</h3>
+      <p>This website has no analytics or tracking. It is hosted on GitHub Pages and loads fonts from Google Fonts and code from the jsDelivr and unpkg networks. GitHub's API supplies the star count. Those providers receive your IP address and browser details when your browser contacts them. The Command Center dashboard also loads fonts from Google Fonts.</p>
+
+      <h3>Messages you send us</h3>
+      <p>If you email us, we keep the message and your address to answer you.</p>
+
+      <h2 id="sentinel-ai"><span class="num">4.</span>Sentinel AI</h2>
+      <p>Sentinel AI is an optional agent that investigates motion and incidents. It is available on paid plans and on licensed self-hosted installs, and it is <strong>off until an admin of your organization turns it on</strong>. An admin can turn it off at any time.</p>
+      <p>While it is on, each run sends the following to our AI model provider, <strong>Ollama Cloud</strong> (Ollama, Inc., United States):</p>
+      <ul>
+        <li>live camera images (single snapshots, or a few frames taken seconds apart), which may show people, vehicles, licence plates and property;</li>
+        <li>camera and CameraNode names, recent motion and incident details, and any instructions an admin gives a manual run.</li>
+      </ul>
+      <p>The model describes what it sees, and the agent may file an incident with images as evidence. The incident and the run record are stored as described above.</p>
+      <p>We do not use these images to train models. Ollama processes them under its own <a href="https://ollama.com/privacy">privacy policy</a>. <strong>We will update this policy and give notice before we send Sentinel AI data to a different provider.</strong></p>
+      <p>Organizations that never turn Sentinel AI on send no images to any AI provider.</p>
+      <p>Separately, an admin can connect an AI assistant of their choice through MCP. The assistant then receives whatever its key allows it to read, including live images. That assistant's provider is chosen by your organization, not by us.</p>
+
+      <h2 id="use"><span class="num">5.</span>How we use it</h2>
+      <p>We use personal information only to:</p>
+      <ul>
+        <li>run the Service: sign-in, live video, notifications, incidents, Sentinel AI, and integrations;</li>
+        <li>apply plan limits and take payments;</li>
+        <li>keep the Service and its users secure, and prevent abuse;</li>
+        <li>fix problems and provide support;</li>
+        <li>send service emails, such as alerts you have chosen and important account notices;</li>
+        <li>meet legal obligations.</li>
+      </ul>
+      <p>We do not sell or rent personal information, share it for advertising, build profiles for marketing, or use your video or images to train AI models.</p>
+      <p><strong>Legal bases (EEA and UK).</strong> We rely on <em>contract</em> to provide the Service you signed up for; on <em>legitimate interests</em> for security, abuse prevention, error tracking, and logs; and on <em>legal obligation</em> where the law requires it. Where we process data for an organization as its processor, the organization decides the legal basis.</p>
+
+      <h2 id="admins"><span class="num">6.</span>What your admins can see</h2>
+      <p>If you are a member of an organization, its admins can see your name and email, which cameras you watched and when, the IP address and browser you used, and the actions recorded in the audit log. They can also export or delete that information. Ask your admin if you want to know how your organization uses it.</p>
+
+      <h2 id="sharing"><span class="num">7.</span>Who we share it with</h2>
+      <p>We use these providers ("sub-processors") to run the Service. Each receives only what its job needs and is bound by its own data-protection terms.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Provider</th><th scope="col">What it does</th><th scope="col">What it receives</th></tr></thead>
+          <tbody>
+            <tr><td>Fly.io (US)</td><td>Hosts Command Center, its database and backups</td><td>All data Command Center stores</td></tr>
+            <tr><td>Clerk (US)</td><td>Sign-in, organizations, subscriptions</td><td>Account, membership and billing details; sign-in device and IP</td></tr>
+            <tr><td>Stripe (US)</td><td>Card payments, through Clerk</td><td>Card and billing details</td></tr>
+            <tr><td>Ollama Cloud (US)</td><td>AI model for Sentinel AI, only when it is on</td><td>Camera images and incident text (see <a href="#sentinel-ai">section 4</a>)</td></tr>
+            <tr><td>Resend (US)</td><td>Sends notification emails</td><td>Recipient address, subject and content</td></tr>
+            <tr><td>Sentry (US)</td><td>Error tracking</td><td>Error reports (see <a href="#collect">section 3</a>)</td></tr>
+            <tr><td>Upstash (US)</td><td>Rate-limit counters</td><td>IP addresses and organization IDs, expiring within an hour</td></tr>
+            <tr><td>ImprovMX</td><td>Forwards email sent to our addresses</td><td>Messages you send us</td></tr>
+            <tr><td>GitHub (US)</td><td>Hosts this website</td><td>Visitors' IP addresses and browser details</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The full sub-processor list, with its change history, is in <a href="https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/docs/legal/SUB_PROCESSORS.md">our repository</a>. We give business customers at least 14 days' notice of a new sub-processor.</p>
+      <p>We may also disclose information:</p>
+      <ul>
+        <li><strong>when the law requires it.</strong> We have no standing arrangements with law enforcement. We check that each request is valid, disclose only what it requires, and tell the affected organization unless the law forbids it. We do not hold recordings, so requests for footage must go to the camera's owner.</li>
+        <li><strong>to protect people.</strong> We disclose information where narrowly necessary to prevent serious harm, or to report child sexual abuse material.</li>
+        <li><strong>in a business transfer.</strong> If SourceBox is merged or sold, the new owner would be bound by this policy, and we would tell you first.</li>
+      </ul>
+
+      <h2 id="retention"><span class="num">8.</span>How long we keep it</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Data</th><th scope="col">Kept for</th></tr></thead>
+          <tbody>
+            <tr><td>Live video</td><td>About 60 seconds, in memory only</td></tr>
+            <tr><td>Viewing, audit and MCP activity logs, motion events, notifications, email log</td><td>30 days on Free, 90 days on Pro, 365 days on Pro Plus, then deleted automatically</td></tr>
+            <tr><td>Incidents and their evidence</td><td>Until you delete the incident or the organization</td></tr>
+            <tr><td>Sentinel AI run records</td><td>Until the organization is reset or deleted</td></tr>
+            <tr><td>Cameras, CameraNodes, settings, monthly usage totals</td><td>Until you delete them or the organization</td></tr>
+            <tr><td>Queued emails</td><td>7 days after sending</td></tr>
+            <tr><td>Addresses that bounced or complained</td><td>Indefinitely, so we never email them again</td></tr>
+            <tr><td>Account details</td><td>While your account exists</td></tr>
+            <tr><td>Backups</td><td>Database backups are deleted after 14 days at most</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Deleted data can remain in backups until they expire. We do not restore it from a backup except to recover from a failure.</p>
+
+      <h2 id="your-rights"><span class="num">9.</span>Export, deletion and your rights</h2>
+      <p>Admins can manage an organization's data directly in the dashboard, on every plan including Free:</p>
+      <ul>
+        <li><strong>Export:</strong> Settings → Privacy &amp; Data → <em>Download my data (ZIP)</em>. This downloads the organization's cameras, nodes, settings, logs, motion events, notifications, incidents and evidence, and email records as JSON files.</li>
+        <li><strong>Delete everything:</strong> Settings → Danger Zone → <em>Full Organization Reset</em>. This deletes all the organization's data from Command Center in one step, and tells each connected CameraNode to wipe its local recordings. It cannot be undone. Deleting the organization does the same.</li>
+        <li><strong>Correct your account:</strong> update your name, email and photo from your account menu in the dashboard.</li>
+      </ul>
+      <p>Depending on where you live, you may have the right to access, correct, delete, or receive a copy of your personal information, to object to or restrict how it is used, and to withdraw consent. If you are a member and not an admin, ask your organization's admin, or email us at <a href="mailto:support@sentinel-command.com">support@sentinel-command.com</a>. To delete your own account, email us from the address on the account.</p>
+      <p>We may need to verify your identity before acting on a request. We respond within one month, or sooner where the law requires. If a request concerns data we hold for an organization, we may pass it to that organization and help it respond. Exercising your rights will never affect the price or quality of the Service you receive.</p>
+
+      <h2 id="on-camera"><span class="num">10.</span>People on camera</h2>
+      <p>If you appear in footage from a camera connected to Sentinel, the camera's owner decides what is recorded and kept. Recordings are held only on the owner's CameraNode, so please contact the owner first. If you can't, or you believe a camera is being used unlawfully, email <a href="mailto:support@sentinel-command.com">support@sentinel-command.com</a>. We will tell you what we can, pass your request to the organization, and act under our Terms if they are being broken.</p>
+
+      <h2 id="self-hosted"><span class="num">11.</span>Self-hosted installs</h2>
+      <p>If you run Command Center yourself, its data stays on your own infrastructure and we cannot see it. We receive only:</p>
+      <ul>
+        <li><strong>Licence checks</strong> (if you use a licence key): your install contacts our licence service at start-up and every 15 minutes, sending the key and an install ID. We record the time, result, and the IP address it came from. We also keep the licence's details, such as the contact email, plan and renewal date. We keep these while the licence exists; ask us to delete them once it ends.</li>
+        <li><strong>Cloud sync</strong> (only if your licence includes it): every 30 minutes, your install sends a copy of its cameras, camera groups, CameraNodes, incidents, motion events, notifications, and Sentinel AI settings and runs. <strong>Not sent:</strong> CameraNode key fingerprints and incident images and clips, and no video. The copy is kept in a database separate from the hosted service's, for as long as you use cloud sync. Email us to have it deleted.</li>
+      </ul>
+      <p>If you turn on Sentinel AI on a self-hosted install, it uses the AI provider you configure, under your agreement with that provider.</p>
+
+      <h2 id="cookies"><span class="num">12.</span>Cookies and browser storage</h2>
+      <p>The dashboard uses only cookies that are strictly necessary: Clerk's sign-in session cookies. It also stores a few preferences in your browser's local storage, such as whether you have dismissed the cookie notice and your setup checklist progress. On self-hosted installs, local storage also holds your sign-in token. We use no analytics, advertising, or tracking cookies, so there is nothing to opt out of. If that ever changes, we will ask for your consent first.</p>
+
+      <h2 id="security"><span class="num">13.</span>Security</h2>
+      <ul>
+        <li>All connections use HTTPS.</li>
+        <li>Each organization's data is kept separate: every database query is limited to the organization of the signed-in user or key.</li>
+        <li>Keys are stored only as SHA-256 fingerprints.</li>
+        <li>Recordings on CameraNodes are encrypted with AES-256-GCM.</li>
+        <li>Our database and backups are encrypted at rest by our hosting provider.</li>
+        <li>Access to production systems is limited to the people who run them.</li>
+      </ul>
+      <p>No system is perfectly secure. If we learn of a breach affecting your personal information, we will notify you and the authorities as the law requires. To report a vulnerability, see our <a href="https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/SECURITY.md">security policy</a>.</p>
+
+      <h2 id="transfers"><span class="num">14.</span>International transfers</h2>
+      <p>SourceBox is based in the United States, and the Service and most of our providers operate there. If you use the Service from elsewhere, your information is transferred to the United States, where privacy laws may differ from yours. For personal data from the EEA, the UK or Switzerland, we rely on the European Commission's Standard Contractual Clauses (with the UK Addendum), which our Data Processing Agreement incorporates, and on equivalent safeguards from our providers.</p>
+
+      <h2 id="regional"><span class="num">15.</span>Regional rights</h2>
+      <h3>EEA and UK</h3>
+      <p>You have the rights in <a href="#your-rights">section 9</a>. You can also complain to your local data-protection authority, though we would like the chance to resolve your concern first.</p>
+      <h3>California and other US states</h3>
+      <p>The categories of personal information we collect are those in <a href="#collect">section 3</a>: identifiers (such as name, email and IP address), commercial information (plan and billing status), internet activity (logs), and visual information (camera images, as described in <a href="#video">section 2</a>). Their sources, purposes, and recipients are in sections 3, 5 and 7. We do not sell or "share" personal information (for cross-context behavioural advertising), and we do not use sensitive personal information to infer characteristics about you.</p>
+      <p>You may ask to know, access, correct, or delete your personal information, and you may use an authorised agent to do so. We will not discriminate against you for using these rights. Send requests to <a href="mailto:support@sentinel-command.com">support@sentinel-command.com</a>.</p>
+
+      <h2 id="children"><span class="num">16.</span>Children</h2>
+      <p>The Service is not for anyone under 18, and we do not knowingly collect personal information from children through accounts. If you believe a child has created an account, email us and we will delete it. Children may still appear in footage from someone's camera; see <a href="#on-camera">section 10</a>.</p>
+
+      <h2 id="changes"><span class="num">17.</span>Changes to this policy</h2>
+      <p>When this policy changes, we update the date at the top. For a material change, such as a new kind of data, a new AI provider, or a new use of your data, we will email the admins of each organization, or show a notice in the dashboard, before it takes effect. Earlier versions are kept in the <a href="https://github.com/SourceBox-LLC/sentinel-website/commits/master/docs/legal/privacy.html">website's history</a>.</p>
+
+      <h2 id="contact"><span class="num">18.</span>Contact</h2>
+      <p>SourceBox LLC<br>
+      Privacy questions and requests: <a href="mailto:support@sentinel-command.com">support@sentinel-command.com</a> (please put "Privacy" in the subject)<br>
+      Security issues: <a href="mailto:security@sentinel-command.com">security@sentinel-command.com</a></p>
+    </article>
+  </div>
+
+  <footer>
+    <span>© 2026 SourceBox LLC</span>
+    <a href="terms">Terms of Service</a>
+    <a href="privacy">Privacy Policy</a>
+    <a href="https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/SECURITY.md">Security</a>
+    <a href="/">sentinel-command.com</a>
+  </footer>
+  <script>
+    // Contents start open on wide screens, where they sit in the sidebar.
+    if (window.matchMedia("(min-width: 960px)").matches) document.getElementById("toc").open = true
+  </script>
+</body>
+</html>
