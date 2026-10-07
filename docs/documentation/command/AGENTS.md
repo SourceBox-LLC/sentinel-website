@@ -309,7 +309,9 @@ A camera suspended by its plan's camera cap gets **402** with a `plan_limit_hit`
 
 `/` redirects hosted visitors to the marketing site. A self-hosted install (`VITE_AUTH_PROVIDER=local`) goes to `/dashboard` instead.
 
-Every response carries `X-Request-Id`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, a referrer policy and a permissions policy, plus HSTS over HTTPS (`headers.rs`). There is no Content-Security-Policy yet.
+Every response carries `X-Request-Id`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, a referrer policy and a permissions policy, plus HSTS over HTTPS (`headers.rs`).
+
+**Content-Security-Policy.** Built once at start-up (`headers::content_security_policy`) and sent on every response. Scripts run only from this origin, Clerk's frontend host (derived from the publishable key), Cloudflare's bot check and Stripe; there is no `'unsafe-inline'` or `'unsafe-eval'` for scripts. Styles allow `'unsafe-inline'` because Clerk injects `<style>` elements. `blob:` is allowed for media and images (HLS.js plays through a MediaSource URL). A self-hosted install gets the same policy without Clerk, Cloudflare and Stripe. The API docs pages set their own looser policy, because Swagger UI and ReDoc load from jsdelivr. **If the frontend starts loading anything from a new origin, add it to the policy, or the browser will block it silently.**
 
 ## Errors
 
@@ -383,6 +385,10 @@ A 401 from any API call makes the frontend end the Clerk session and return to `
 
 The key's SHA-256 is matched against `camera_nodes.api_key_hash`, and the org comes from the node row. A wrong key at `/register` or `/validate` records "Invalid API key" on the node only if it has **never connected**. Node IDs are not secret, so on a working node that note would let anyone tell an org to rotate a good key.
 
+### Deleting an account (hosted)
+
+`api/account.rs`. "Delete account" in the account menu opens `/account/delete`; Clerk's own delete button is hidden (`profileSection__danger` in the Clerk appearance), so every deletion goes through the app. Per organization, the account is either the only member (the org is deleted with it), one of several with another admin remaining (it just leaves), or the only admin with other members (refused until someone else is made admin). Then the account is deleted at Clerk and its data erased. These two routes use `SignedInUser`, which needs a valid Clerk session but not an active organization, so someone who has left every org can still delete themselves. The `user.deleted` webhook runs the same erasure as a backstop.
+
 ### MCP and integration keys
 
 Both live in `mcp_api_keys`, split by `kind` (`mcp` or `integration`). **Every query filters on `kind`**, so neither kind works on the other's surface. Integration keys work on every plan.
@@ -434,7 +440,7 @@ Both live in `mcp_api_keys`, split by `kind` (`mcp` or `integration`). **Every q
 | POST | `/api/settings/notifications`, `/api/settings/motion-ingestion`, `/api/settings/timezone` | admin | 30 |
 | POST | `/api/settings/danger/wipe-logs`: delete stream and MCP logs | admin | 5/h |
 | POST | `/api/settings/danger/full-reset`: GDPR erasure of all org data | admin | 3/h |
-| POST | `/api/gdpr/export`: export all org data | admin | 3/h |
+| POST | `/api/gdpr/export`: a ZIP of every org table as JSON, plus each incident's images and clips under `evidence/` (built in a temporary file, not in memory) | admin | 3/h |
 | GET | `/api/audit-logs`, `/api/audit/stream-logs`, `/api/audit/stream-logs/stats` | admin | 120 / 120 / 60 |
 
 `/api/audit-logs`, `/api/audit/stream-logs` and `/api/mcp/activity/logs` also answer `?format=csv`, streamed (`csv_export.rs`). String cells starting with `=`, `+`, `-`, `@`, tab or CR are prefixed with `'` so spreadsheets don't run them as formulas.
@@ -453,8 +459,9 @@ Both live in `mcp_api_keys`, split by `kind` (`mcp` or `integration`). **Every q
 | POST | `/api/nodes`: create a node, returns its key once | billing | 20/h |
 | DELETE | `/api/nodes/{id}`: deletes its cameras and caches | admin | 20/h |
 | POST | `/api/nodes/{id}/rotate-key` | admin | 5 |
+| POST | `/api/nodes/{id}/storage-cap`: body `{max_size_gb}`; sent to the node as `set_storage_cap` (CameraNode 0.1.79+) | admin | 10 |
 
-**WebSocket `/ws/node`.** The node authenticates with `X-Node-API-Key` and `X-Node-Id` headers; an old `?api_key=&node_id=` query string still works but logs a deprecation warning. Node → backend messages are `heartbeat` and `command_result`. Backend → node messages are `ack`, `command` (`take_snapshot`, `list_snapshots`, `list_recordings`, `wipe_data`) and `error`. Any other message type gets an `error` frame, and frames containing a NUL are refused. Motion never travels over the socket.
+**WebSocket `/ws/node`.** The node authenticates with `X-Node-API-Key` and `X-Node-Id` headers; an old `?api_key=&node_id=` query string still works but logs a deprecation warning. Node → backend messages are `heartbeat` and `command_result`. Backend → node messages are `ack`, `command` (`take_snapshot`, `list_snapshots`, `list_recordings`, `wipe_data`, `set_storage_cap`) and `error`. A node too old to know a command answers `unknown command: …`; `set_storage_cap` turns that into a 409 telling the admin to update. Any other message type gets an `error` frame, and frames containing a NUL are refused. Motion never travels over the socket.
 
 ### Live video (HLS)
 
@@ -530,6 +537,8 @@ Members never see `audience = "admin"` notifications, in the list, the count or 
 | POST | `/api/auth/local/login` | – | 10 per address |
 | POST | `/api/auth/local/refresh` | local JWT | 30 |
 | POST | `/api/webhooks/clerk` | Svix signature | 120 |
+| GET | `/api/account/deletion`: what deleting your account would do, per organization | signed in (no org needed) | 30 |
+| DELETE | `/api/account`: delete your account; body `{"confirm": "delete my account"}`. 409 if you are the last admin of an org with other members | signed in (no org needed) | 5/h |
 | POST | `/api/webhooks/resend` | Svix signature | 600 |
 | GET | `/api/health`: `{"status":"healthy","version":"2.1.2"}`, no database work | – | |
 | GET | `/api/health/ready`: 503 if a critical probe fails | – | |
@@ -595,7 +604,8 @@ Both endpoints verify a Svix signature and dedupe on the Svix message ID (`proce
 | `subscriptionItem.freeTrialEnding` | logged only |
 | `organization.created` | `welcome` notification |
 | `organization.deleted` | erase all the org's data (the same function as full-reset) |
-| `organizationMembership.created` / `updated` / `deleted` | `member_added` / `member_role_changed` / `member_removed` notification for admins |
+| `organizationMembership.created` / `updated` / `deleted` | `member_added` / `member_role_changed` / `member_removed` notification for admins. On `deleted`, an organization left with no members is deleted at Clerk (which sends `organization.deleted`) |
+| `user.deleted` | erase that person's data in every org (`gdpr::erase_user_data`): viewing history and read cursors deleted, email log and queue rows deleted, audit rows and "created by" labels kept but anonymised |
 
 Clerk only sends what the endpoint subscribes to. Its configuration is in the Clerk dashboard (Webhooks); the event list is in [LAUNCH_HANDOFF.md](/command/docs/LAUNCH_HANDOFF.md).
 
