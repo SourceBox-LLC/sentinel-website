@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security · Sentinel by SourceBox</title>
+  <meta name="description" content="How Sentinel by SourceBox protects your cameras, your video and your account, and how to report a vulnerability.">
+  <link rel="canonical" href="https://sentinel-command.com/security">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230a0a0f'/><text x='50' y='68' font-size='52' font-weight='700' text-anchor='middle' fill='%2322c55e' font-family='sans-serif'>S</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="legal/legal.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span>Sentinel</span><span class="by"> by SourceBox</span></a>
+    <nav aria-label="Site">
+      <a href="security" aria-current="page">Security</a>
+      <a href="legal/privacy">Privacy</a>
+      <a href="/documentation/">Docs</a>
+      <a class="nav-app" href="https://app.sentinel-command.com">Open the app</a>
+    </nav>
+  </header>
+
+  <div class="page">
+    <details class="toc" id="toc">
+      <summary>Contents</summary>
+      <ol>
+        <li><a href="#video">Your video</a></li>
+        <li><a href="#connections">Connections</a></li>
+        <li><a href="#accounts">Accounts and access</a></li>
+        <li><a href="#keys">Keys</a></li>
+        <li><a href="#ai">Sentinel AI and assistants</a></li>
+        <li><a href="#web">The web app</a></li>
+        <li><a href="#infrastructure">Infrastructure and backups</a></li>
+        <li><a href="#code">Code and dependencies</a></li>
+        <li><a href="#incidents">If something goes wrong</a></li>
+        <li><a href="#report">Reporting a vulnerability</a></li>
+      </ol>
+    </details>
+
+    <article>
+      <p class="eyebrow">Trust</p>
+      <h1>Security</h1>
+      <p class="dates">Last updated October 7, 2026</p>
+
+      <section class="summary" aria-labelledby="summary-heading">
+        <h2 id="summary-heading">The short version</h2>
+        <ul>
+          <li><strong>Recordings never leave your CameraNode</strong>, and they're encrypted there. Our cloud holds about a minute of live video, in memory only.</li>
+          <li>CameraNodes connect <strong>outbound over HTTPS</strong>. There are no ports to open on your network.</li>
+          <li>Every organization's data is kept apart, and every sensitive action is logged.</li>
+          <li>Sentinel AI is off until you turn it on, and you choose which cameras it may see.</li>
+          <li>The code is <strong>public</strong>, so you can check every claim on this page.</li>
+        </ul>
+      </section>
+
+      <h2 id="video"><span class="num">1.</span>Your video</h2>
+      <ul>
+        <li><strong>Recordings stay on your hardware.</strong> CameraNode keeps them in a database on the computer your cameras are plugged into, with each recording and snapshot encrypted using AES-256-GCM. The key is derived from that computer's machine ID. We have no copy and no way to read them.</li>
+        <li><strong>Live video is relayed, not stored.</strong> Command Center keeps about the last 60 seconds per camera in memory to play it to your organization's members. It is never written to disk or backups, and it's dropped about a minute after a camera stops sending.</li>
+        <li><strong>The one exception is incident evidence.</strong> Snapshots and short clips attached to an incident are stored in our database until you delete the incident.</li>
+        <li><strong>Motion detection runs on your CameraNode.</strong> We receive the time and a score, never the frames.</li>
+      </ul>
+
+      <h2 id="connections"><span class="num">2.</span>Connections</h2>
+      <ul>
+        <li>CameraNodes only make <strong>outbound</strong> connections, so you don't need to forward ports, open firewall holes or run a VPN.</li>
+        <li>Every connection uses HTTPS: from your CameraNode, from your browser, and from AI assistants and Home Assistant. Browsers are told never to use plain HTTP (HSTS).</li>
+        <li>A CameraNode's own web dashboard listens only on the computer it runs on, unless you choose to open it to your local network. If you do, it requires a password.</li>
+      </ul>
+
+      <h2 id="accounts"><span class="num">3.</span>Accounts and access</h2>
+      <ul>
+        <li><strong>Sign-in is handled by <a href="https://clerk.com">Clerk</a>.</strong> We never see your password. Session tokens are checked on every request against Clerk's published signing keys, and must have been issued for our site.</li>
+        <li><strong>Organizations are kept apart.</strong> Every database query is limited to the organization of the signed-in person or key making it. We've tested this by attempting cross-organization access through every route and tool.</li>
+        <li><strong>Roles.</strong> Admins manage cameras, keys, settings and data. Members can watch and read notifications.</li>
+        <li><strong>Audit trail.</strong> Security-relevant actions, such as keys created or revoked, settings changed or data exported, are logged with who did them and from where. So is every live view and every AI-assistant call. Admins can review and export these logs.</li>
+        <li><strong>Rate limits</strong> on every sensitive route slow down guessing and abuse. Self-hosted sign-in attempts are limited per address.</li>
+      </ul>
+
+      <h2 id="keys"><span class="num">4.</span>Keys</h2>
+      <ul>
+        <li>CameraNode, AI-assistant (MCP), Sentinel agent and Home Assistant keys are shown in full <strong>once</strong>. We store only a SHA-256 fingerprint, so a database leak wouldn't reveal a usable key.</li>
+        <li>Each kind of key works only where it belongs. A Home Assistant key can't call AI-assistant tools, and the reverse is also true.</li>
+        <li>AI-assistant keys can be limited to <strong>read-only</strong> or to tools you pick.</li>
+        <li>Any key can be revoked at once, and CameraNode keys can be rotated.</li>
+      </ul>
+
+      <h2 id="ai"><span class="num">5.</span>Sentinel AI and assistants</h2>
+      <ul>
+        <li><strong>Sentinel AI is off until an admin turns it on.</strong> While it is on, it sends camera images and incident details to our AI provider so the model can describe what it sees (see the <a href="legal/privacy#sentinel-ai">Privacy Policy</a>). Nothing is sent while it is off.</li>
+        <li><strong>You choose its cameras.</strong> Cameras outside Sentinel's scope are ignored completely; it never sees their frames.</li>
+        <li><strong>An AI can't turn off your cameras.</strong> Sentinel's own key can't change recording settings, so a camera's view can't talk the agent into disabling that camera.</li>
+        <li>Every tool call by Sentinel or by an assistant you connect is logged.</li>
+      </ul>
+
+      <h2 id="web"><span class="num">6.</span>The web app</h2>
+      <ul>
+        <li>A <strong>Content-Security-Policy</strong> lets the dashboard run scripts only from our own site and the few services it needs (sign-in, the sign-up bot check, card payments). An injected script won't run.</li>
+        <li>The dashboard can't be embedded in another site, which blocks clickjacking.</li>
+        <li>We run no analytics, advertising or tracking scripts, and set no tracking cookies.</li>
+      </ul>
+
+      <h2 id="infrastructure"><span class="num">7.</span>Infrastructure and backups</h2>
+      <ul>
+        <li>Command Center runs on <a href="https://fly.io">Fly.io</a> in the United States. Its database and backups are encrypted at rest by Fly.io.</li>
+        <li>Each of our services has <strong>its own database and its own database user</strong>, with no administrator-level access. Credentials for one service can't read another's data.</li>
+        <li>The database is backed up daily and backups are kept for up to 14 days. We have rehearsed restoring from them.</li>
+        <li>Errors are reported to Sentry without names, email addresses or IP addresses.</li>
+        <li>Our full list of service providers, and what each receives, is in the <a href="legal/privacy#sharing">Privacy Policy</a>.</li>
+      </ul>
+
+      <h2 id="code"><span class="num">8.</span>Code and dependencies</h2>
+      <ul>
+        <li><strong>The source is public.</strong> <a href="https://github.com/SourceBox-LLC/Sentinel-Command">Command Center</a> and <a href="https://github.com/SourceBox-LLC/Sentinel-CameraNode">CameraNode</a> are open source, so anyone can audit how your data is handled.</li>
+        <li>Every change runs through automated tests and a security scan (CodeQL) before it ships. The server code's dependencies are checked against published vulnerability databases on every change, and a newly published vulnerability fails the build.</li>
+        <li>Dependency updates are proposed automatically and tested before merging.</li>
+        <li>CameraNode releases come with checksums, so you can verify what you download.</li>
+      </ul>
+
+      <h2 id="incidents"><span class="num">9.</span>If something goes wrong</h2>
+      <p>Our services are checked automatically every few minutes, and errors alert the team. If we learn of a breach affecting your personal information, we will tell you and the authorities as the law requires, along with what happened and what we're doing about it.</p>
+
+      <h2 id="report"><span class="num">10.</span>Reporting a vulnerability</h2>
+      <p>Please email <a href="mailto:security@sentinel-command.com">security@sentinel-command.com</a>, or report privately through <a href="https://github.com/SourceBox-LLC/Sentinel-Command/security/advisories/new">GitHub</a>. Please don't open a public issue. Our <a href="https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/SECURITY.md">security policy</a> lists what's in scope and what to expect. We're grateful for responsible reports.</p>
+    </article>
+  </div>
+
+  <footer>
+    <span>© 2026 SourceBox LLC</span>
+    <a href="legal/terms">Terms of Service</a>
+    <a href="legal/privacy">Privacy Policy</a>
+    <a href="security">Security</a>
+    <a href="/">sentinel-command.com</a>
+  </footer>
+  <script>
+    // Contents start open on wide screens, where they sit in the sidebar.
+    if (window.matchMedia("(min-width: 960px)").matches) document.getElementById("toc").open = true
+  </script>
+</body>
+</html>
