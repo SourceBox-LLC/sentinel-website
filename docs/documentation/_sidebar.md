@@ -3,6 +3,7 @@
 - [Home](README)
 
 - **Get started**
+  - [Using Sentinel](command/docs/USER_GUIDE)
   - [Install a CameraNode](camera-node/README)
   - [Command Center](command/README)
   - [Home Assistant integration](home-assistant/README)
