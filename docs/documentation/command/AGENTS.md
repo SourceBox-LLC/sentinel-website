@@ -524,7 +524,7 @@ Members never see `audience = "admin"` notifications, in the list, the count or 
 | GET | `/api/mcp/activity/logs`, `…/logs/stats` | admin | 120 / 60 |
 | GET | `/api/mcp/activity/stream` (SSE) | admin | 60 |
 | GET / POST / DELETE | `/api/integration/keys`, `/api/integration/keys/{id}` | admin | – / 10/h / 30/h |
-| GET | `/api/integration/cameras`: with LAN `local_url` and recording state | `osi_` key | 120 |
+| GET | `/api/integration/cameras`: with LAN `local_url` and recording state. `local_url` carries `?st=<token>`, a signed token that opens that camera's HLS on a password-protected node (CameraNode 0.1.81+; see `integration::stream_token`) | `osi_` key | 120 |
 | GET | `/api/integration/cameras/{id}/snapshot`: live JPEG via the node | `osi_` key | 30 |
 | POST | `/api/integration/cameras/{id}/recording`: body `{recording: bool}` | `osi_` key | 60 |
 | GET | `/api/integration/status`: camera and node counts, disk, versions, plan | `osi_` key | 120 |
@@ -604,7 +604,7 @@ Both endpoints verify a Svix signature and dedupe on the Svix message ID (`proce
 | `subscriptionItem.freeTrialEnding` | logged only |
 | `organization.created` | `welcome` notification |
 | `organization.deleted` | erase all the org's data (the same function as full-reset) |
-| `organizationMembership.created` / `updated` / `deleted` | `member_added` / `member_role_changed` / `member_removed` notification for admins. On `deleted`, an organization left with no members is deleted at Clerk (which sends `organization.deleted`) |
+| `organizationMembership.created` / `updated` / `deleted` | `member_added` / `member_role_changed` / `member_removed` notification for admins. On `deleted`: if the account no longer exists at Clerk, its data is erased using the email address the event carries (`user.deleted` carries only the id); and an organization left with no members is deleted at Clerk (which sends `organization.deleted`) |
 | `user.deleted` | erase that person's data in every org (`gdpr::erase_user_data`): viewing history and read cursors deleted, email log and queue rows deleted, audit rows and "created by" labels kept but anonymised |
 
 Clerk only sends what the endpoint subscribes to. Its configuration is in the Clerk dashboard (Webhooks); the event list is in [LAUNCH_HANDOFF.md](/command/docs/LAUNCH_HANDOFF.md).
