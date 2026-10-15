@@ -10,7 +10,7 @@ User-facing documentation (setting up cameras, recording, notifications) is on t
 | --- | --- |
 | [USER_GUIDE.md](/command/docs/USER_GUIDE.md) | You want to know how to use the product: cameras, recording, alerts, incidents, Sentinel AI, your data. Written for customers; it's the guide on the docs site. Update it in the same change as any feature it describes. |
 | [ARCHITECTURE.md](/command/docs/ARCHITECTURE.md) | You're new, or need to know which service or repo owns something. Every repository and deployed service, and how they connect. |
-| [SENTINEL_AGENT.md](/command/docs/SENTINEL_AGENT.md) | You're working on the AI agent, or running one yourself. |
+| [SENTINEL_AGENT.md](https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/docs/SENTINEL_AGENT.md) | You're working on the AI agent, or running one yourself. |
 | [LAUNCH_HANDOFF.md](/command/docs/LAUNCH_HANDOFF.md) | You're preparing for paying customers. The remaining steps that need a person, not code. |
 
 ## Runbooks (`runbooks/`)

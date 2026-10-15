@@ -41,7 +41,7 @@ A service can sleep only if it wakes fast and a missed call is cheap.
 - **Waking fast.** Fly's proxy waits about **8 seconds** for an auto-started machine to bind its port.
 - **License and Sync** pass both tests. A failed licence check-in falls into a 72-hour grace window, and a failed sync push retries next cycle while the operator's own database stays authoritative.
 - **Command Center's `app`** serves live video and never sleeps.
-- **The `agent`** used to miss the 8-second budget: the Python agent took about 10 seconds to start. The Rust binary answers in milliseconds, but it still stays warm until scale-to-zero has been tried in production. [SENTINEL_AGENT.md](/command/docs/SENTINEL_AGENT.md#why-the-machine-stays-warm) explains.
+- **The `agent`** used to miss the 8-second budget: the Python agent took about 10 seconds to start. The Rust binary answers in milliseconds, but it still stays warm until scale-to-zero has been tried in production. [SENTINEL_AGENT.md](https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/docs/SENTINEL_AGENT.md#why-the-machine-stays-warm) explains.
 
 ## The signal path — camera to browser
 
@@ -67,7 +67,7 @@ A run: claim via `POST /runs/{id}/start` → investigate through MCP tools → r
 
 The model is a config string (`LLM_MODEL`: Ollama, Anthropic, or an OpenAI-compatible endpoint). **Changing it on the hosted deployment moves customer camera imagery to a different processor** — see `legal/SUB_PROCESSORS.md` before you do.
 
-Full detail: [SENTINEL_AGENT.md](/command/docs/SENTINEL_AGENT.md).
+Full detail: [SENTINEL_AGENT.md](https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/docs/SENTINEL_AGENT.md).
 
 ## Who can talk to it
 
@@ -118,7 +118,7 @@ Plans are enforced on camera count, **viewer-hours** (the real tier axis; see [A
 
 ## Where to go next
 
-- [SENTINEL_AGENT.md](/command/docs/SENTINEL_AGENT.md) — the AI agent in depth
+- [SENTINEL_AGENT.md](https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/docs/SENTINEL_AGENT.md) — the AI agent in depth
 - [runbooks/ON_CALL.md](/command/docs/runbooks/ON_CALL.md) — "the app is broken"
 - [runbooks/DISASTER_RECOVERY.md](/command/docs/runbooks/DISASTER_RECOVERY.md) — "the data is gone"
 - [LAUNCH_HANDOFF.md](/command/docs/LAUNCH_HANDOFF.md) — what's left before paying customers

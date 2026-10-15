@@ -1,6 +1,6 @@
 # AGENTS.md
 
-The developer reference for **Sentinel Command Center**: the cloud dashboard and API for the **Sentinel by SourceBox** security-camera system. It is written for engineers and coding agents changing this repository. For how the whole system fits together, read [docs/ARCHITECTURE.md](/command/docs/ARCHITECTURE.md) first. For the AI agent in depth, read [docs/SENTINEL_AGENT.md](/command/docs/SENTINEL_AGENT.md).
+The developer reference for **Sentinel Command Center**: the cloud dashboard and API for the **Sentinel by SourceBox** security-camera system. It is written for engineers and coding agents changing this repository. For how the whole system fits together, read [docs/ARCHITECTURE.md](/command/docs/ARCHITECTURE.md) first. For the AI agent in depth, read [docs/SENTINEL_AGENT.md](https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/docs/SENTINEL_AGENT.md).
 
 **In one paragraph.** A Rust backend ([axum](https://github.com/tokio-rs/axum)) and a React 19 frontend, in one repo and one Docker image. Browsers sign in with Clerk (hosted) or a local admin account (self-hosted). CameraNodes push live video into an in-memory segment cache, and browsers play it as HLS. There is no object storage in the live path: no S3, no Tigris, no presigned URLs. Data lives in PostgreSQL (hosted) or SQLite (the self-hosted default). The Sentinel AI agent is a second binary from the same crate.
 
@@ -188,7 +188,7 @@ Everything is an environment variable. `backend-rs/.env.example` is a commented 
 | `SENTINEL_LICENSE_SERVICE_URL` | `https://sentinel-license.fly.dev` | |
 | `SENTINEL_SYNC_SERVICE_URL` | `https://sentinel-sync.fly.dev` | |
 
-The agent's own variables are in [docs/SENTINEL_AGENT.md](/command/docs/SENTINEL_AGENT.md#configuration).
+The agent's own variables are in [docs/SENTINEL_AGENT.md](https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/docs/SENTINEL_AGENT.md#configuration).
 
 ### Email (Resend)
 
