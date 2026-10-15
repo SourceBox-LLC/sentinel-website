@@ -29,7 +29,7 @@ Before filing, check [existing issues](https://github.com/SourceBox-LLC/Sentinel
 
 ### Reporting security issues
 
-See [SECURITY.md](https://github.com/SourceBox-LLC/Sentinel-Command/blob/master/SECURITY.md). Do **not** file public issues for vulnerabilities.
+See [SECURITY.md](/command/SECURITY.md). Do **not** file public issues for vulnerabilities.
 
 ## Local development setup
 

@@ -12,6 +12,8 @@
 
 - **How it works**
   - [System architecture](command/docs/ARCHITECTURE)
+  - [Sentinel AI agent](command/docs/SENTINEL_AGENT)
+  - [Security policy](command/SECURITY)
 
 - **Developer reference**
   - [Command Center internals](command/AGENTS)
