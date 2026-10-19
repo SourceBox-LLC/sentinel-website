@@ -43,7 +43,7 @@
     <article>
       <p class="eyebrow">Trust</p>
       <h1>Security</h1>
-      <p class="dates">Last updated October 7, 2026</p>
+      <p class="dates">Last updated October 19, 2026</p>
 
       <section class="summary" aria-labelledby="summary-heading">
         <h2 id="summary-heading">The short version</h2>
@@ -60,7 +60,7 @@
       <ul>
         <li><strong>Recordings stay on your hardware.</strong> CameraNode keeps them in a database on the computer your cameras are plugged into, with each recording and snapshot encrypted using AES-256-GCM. The key is derived from that computer's machine ID. We have no copy and no way to read them.</li>
         <li><strong>Live video is relayed, not stored.</strong> Command Center keeps about the last 60 seconds per camera in memory to play it to your organization's members. It is never written to disk or backups, and it's dropped about a minute after a camera stops sending.</li>
-        <li><strong>The one exception is incident evidence.</strong> Snapshots and short clips attached to an incident are stored in our database until you delete the incident.</li>
+        <li><strong>The one exception is incident evidence.</strong> Snapshots and short clips attached to an incident are stored in our database. Snapshots stay until you delete the incident; clip video (at most 30 seconds a clip) is deleted after your plan&rsquo;s log retention period: 30, 90 or 365 days.</li>
         <li><strong>Motion detection runs on your CameraNode.</strong> We receive the time and a score, never the frames.</li>
       </ul>
 
@@ -105,9 +105,9 @@
 
       <h2 id="infrastructure"><span class="num">7.</span>Infrastructure and backups</h2>
       <ul>
-        <li>Command Center runs on <a href="https://fly.io">Fly.io</a> in the United States. Its database and backups are encrypted at rest by Fly.io.</li>
+        <li>Command Center runs on <a href="https://fly.io">Fly.io</a> in the United States. Its database and backups are encrypted at rest by Fly.io, and our services connect to the database over TLS 1.3, checking its certificate.</li>
         <li>Each of our services has <strong>its own database and its own database user</strong>, with no administrator-level access. Credentials for one service can't read another's data.</li>
-        <li>The database is backed up daily and backups are kept for up to 14 days. We have rehearsed restoring from them.</li>
+        <li>The database is backed up daily and backups are kept for up to 30 days. The copy kept outside Fly.io is encrypted with a key only we hold. We have rehearsed restoring from them.</li>
         <li>Errors are reported to Sentry without names, email addresses or IP addresses.</li>
         <li>Our full list of service providers, and what each receives, is in the <a href="legal/privacy#sharing">Privacy Policy</a>.</li>
       </ul>
