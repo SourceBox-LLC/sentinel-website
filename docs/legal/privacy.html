@@ -51,13 +51,13 @@
     <article>
       <p class="eyebrow">Legal</p>
       <h1>Privacy Policy</h1>
-      <p class="dates">Effective October 6, 2026</p>
+      <p class="dates">Effective October 6, 2026 · Last updated October 19, 2026</p>
 
       <section class="summary" aria-labelledby="summary-heading">
         <h2 id="summary-heading">The short version</h2>
         <ul>
           <li><strong>Your recordings stay on your CameraNode.</strong> Live video passes through our servers in memory, about the last 60 seconds per camera, and is never written to disk.</li>
-          <li><strong>We do store some images:</strong> snapshots and short clips saved as evidence on an incident. They stay until you delete the incident.</li>
+          <li><strong>We do store some images:</strong> snapshots and short clips saved as evidence on an incident. Snapshots stay until you delete the incident. Clip video is deleted after 30, 90 or 365 days, depending on your plan.</li>
           <li><strong>Sentinel AI is off until an admin turns it on.</strong> While it is on, camera images go to our AI provider, Ollama Cloud, to be described.</li>
           <li>We keep account details, activity logs and settings. Logs are deleted after 30, 90 or 365 days, depending on your plan.</li>
           <li>No ads, no analytics, no tracking cookies, no data brokers. We don't sell your data or train AI on your video.</li>
@@ -75,7 +75,7 @@
         <li><strong>Recordings</strong> are stored only on your CameraNode, in a database encrypted with AES-256-GCM. We do not receive them and cannot read them.</li>
         <li><strong>Live video</strong> is sent from your CameraNode to Command Center in one-second segments and played to signed-in members of your organization. We keep segments <strong>in memory only</strong>, about the last 60 seconds per camera, and drop them about a minute after a camera stops sending. Live video is never written to disk, object storage, or backups.</li>
         <li><strong>Snapshots on request.</strong> A snapshot taken from the dashboard is saved on your CameraNode, not by us. Live images fetched by an MCP tool or by Home Assistant pass through our servers to that tool and are not kept.</li>
-        <li><strong>Incident evidence is the exception.</strong> When an incident is created by Sentinel AI, by an MCP tool, or by a person, JPEG snapshots and short video clips (taken from the live buffer) can be attached to it as evidence. <strong>We store those in our database until the incident is deleted.</strong></li>
+        <li><strong>Incident evidence is the exception.</strong> When an incident is created by Sentinel AI, by an MCP tool, or by a person, JPEG snapshots and short video clips (taken from the live buffer) can be attached to it as evidence. <strong>We store those in our database.</strong> Snapshots stay until the incident is deleted. A clip is at most 30 seconds long, and its video is deleted after your plan&rsquo;s log retention period (30, 90 or 365 days); the incident keeps a note that a clip was taken.</li>
         <li><strong>Motion detection</strong> runs on your CameraNode. We receive only the camera, the time, and a motion score, never the frames.</li>
       </ul>
 
@@ -181,13 +181,14 @@
           <tbody>
             <tr><td>Live video</td><td>About 60 seconds, in memory only</td></tr>
             <tr><td>Viewing, audit and MCP activity logs, motion events, notifications, email log</td><td>30 days on Free, 90 days on Pro, 365 days on Pro Plus, then deleted automatically</td></tr>
-            <tr><td>Incidents and their evidence</td><td>Until you delete the incident or the organization</td></tr>
+            <tr><td>Incidents, their snapshots and notes</td><td>Until you delete the incident or the organization</td></tr>
+            <tr><td>Incident video clips</td><td>30 days on Free, 90 days on Pro, 365 days on Pro Plus, then the video is deleted automatically</td></tr>
             <tr><td>Sentinel AI run records</td><td>Until the organization is reset or deleted</td></tr>
             <tr><td>Cameras, CameraNodes, settings, monthly usage totals</td><td>Until you delete them or the organization</td></tr>
             <tr><td>Queued emails</td><td>7 days after sending</td></tr>
             <tr><td>Addresses that bounced or complained</td><td>Indefinitely, so we never email them again</td></tr>
             <tr><td>Account details</td><td>While your account exists</td></tr>
-            <tr><td>Backups</td><td>Database backups are deleted after 14 days at most</td></tr>
+            <tr><td>Backups</td><td>Database backups are deleted after 30 days at most</td></tr>
           </tbody>
         </table>
       </div>
