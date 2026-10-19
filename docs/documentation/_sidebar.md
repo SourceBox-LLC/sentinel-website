@@ -34,6 +34,7 @@
   - [ADR 0004: Installer binary integrity — HTTPS + GitHub trust, signing deferred](camera-node/docs/adr/0004-installer-binary-integrity)
   - [ADR 0001: Lightweight sync_schema instead of Alembic](command/docs/adr/0001-sync-schema-vs-alembic)
   - [ADR 0002: Viewer-hours per month is the real tier differentiator](command/docs/adr/0002-viewer-hour-billing)
+  - [ADR 0003: Private video, an opt-in end-to-end encrypted mode per camera](command/docs/adr/0003-private-video-mode)
 
 - **Legal drafts**
   - [Data processing agreement (draft)](command/docs/legal/DPA)
