@@ -157,7 +157,7 @@ Everything is an environment variable. `backend-rs/.env.example` is a commented 
 | `PORT` | `8000` | Listen port. |
 | `STATIC_DIR` | `/app/static` | The built frontend. |
 | `SCRIPTS_DIR` | `/app/scripts` | Where `/install.sh` and `/mcp-setup.*` are read from. |
-| `REDIS_URL` | — | Shared rate-limit counters. Without it, counters are per process: fine on one machine. Production has used Upstash on Fly; confirm with `fly secrets list`. |
+| `REDIS_URL` | — | Shared rate-limit counters. Without it, counters are per process: fine on one machine. Production uses Upstash on Fly. Bucket names carry node-key hash prefixes, org IDs and keyed hashes of client addresses, never the addresses themselves (`ratelimit::pseudonymous_tenant`). |
 | `API_DOCS_ENABLED` | off under Fly, else on | Serves `/api-docs`, `/api-redoc` and `/api/openapi.json`. |
 | `CLERK_WEBHOOK_SECRET` | — | Svix signing secret for `/api/webhooks/clerk`. Unset, every delivery is refused. |
 | `LOCAL_ORG_ID` | `self-host` | The single org in local-auth mode. |
@@ -370,7 +370,7 @@ A 401 from any API call makes the frontend end the Clerk session and return to `
 
 `AUTH_PROVIDER=local` replaces Clerk with one admin account and one org (`LOCAL_ORG_ID`). Both produce the same `AuthUser`, so every route and plan check works unchanged.
 
-- **Login.** `POST /api/auth/local/login` checks `LOCAL_ADMIN_USERNAME` and the argon2 `LOCAL_ADMIN_PASSWORD_HASH` (from `sentinel-hash-password`, whose parameters match python-argon2's), and returns a 30-day HS256 token signed with `APP_SECRET_KEY`. It is limited to 10 attempts a minute **per client address**, whatever credentials the request carries (`PerMinuteByIp`).
+- **Login.** `POST /api/auth/local/login` checks `LOCAL_ADMIN_USERNAME` and the argon2 `LOCAL_ADMIN_PASSWORD_HASH` (from `sentinel-hash-password`, whose parameters match python-argon2's), and returns a 30-day HS256 token signed with `APP_SECRET_KEY` (at least 32 characters, or the server refuses to start). It is limited to 10 attempts a minute **per client address**, whatever credentials the request carries (`PerMinuteByIp`).
 - **Refresh.** `POST /api/auth/local/refresh` re-signs a valid token, so an open dashboard never hits the 30-day wall.
 - **Plan.** Every plan lookup short-circuits to the `self_host` tier. Everything is unlocked except Sentinel AI, which needs a licence.
 - **Not available:** the Clerk webhook route is not mounted, the hourly plan reconcile does not run, and email recipients are just `LOCAL_ADMIN_EMAIL`.
@@ -401,7 +401,7 @@ Both live in `mcp_api_keys`, split by `kind` (`mcp` or `integration`). **Every q
 | Table | Holds |
 | --- | --- |
 | `cameras` | a camera: node, name, status, codecs, group, recording policy, `disabled_by_plan`, `last_seen` |
-| `camera_nodes` | a CameraNode: `api_key_hash`, hostname, status, version, storage stats, `last_register_error` |
+| `camera_nodes` | a CameraNode: `api_key_hash`, hostname, status, version, storage stats, `last_register_error`, LAN address and whether its dashboard serves HTTPS (`http_tls`, stored for later; stream links stay `http://`) |
 | `camera_groups` | user-defined groups (name, colour, icon) |
 | `settings` | per-org key/value: plan, timezone, notification toggles, payment flags, licence verdict, sync cursors, cooldown anchors |
 | `audit_log` | security audit trail |
@@ -462,7 +462,7 @@ Both live in `mcp_api_keys`, split by `kind` (`mcp` or `integration`). **Every q
 | POST | `/api/nodes/{id}/rotate-key` | admin | 5 |
 | POST | `/api/nodes/{id}/storage-cap`: body `{max_size_gb}`; sent to the node as `set_storage_cap` (CameraNode 0.1.79+) | admin | 10 |
 
-**WebSocket `/ws/node`.** The node authenticates with `X-Node-API-Key` and `X-Node-Id` headers; an old `?api_key=&node_id=` query string still works but logs a deprecation warning. Node → backend messages are `heartbeat` and `command_result`. Backend → node messages are `ack`, `command` (`take_snapshot`, `list_snapshots`, `list_recordings`, `wipe_data`, `set_storage_cap`) and `error`. A node too old to know a command answers `unknown command: …`; `set_storage_cap` turns that into a 409 telling the admin to update. Any other message type gets an `error` frame, and frames containing a NUL are refused. Motion never travels over the socket.
+**WebSocket `/ws/node`.** The node authenticates with `X-Node-API-Key` and `X-Node-Id` headers; credentials in the query string are refused (removed 2026-10-19; CameraNode has sent headers since 0.1.65, now the minimum version). Node → backend messages are `heartbeat` and `command_result`. Backend → node messages are `ack`, `command` (`take_snapshot`, `list_snapshots`, `list_recordings`, `wipe_data`, `set_storage_cap`) and `error`. A node too old to know a command answers `unknown command: …`; `set_storage_cap` turns that into a 409 telling the admin to update. Any other message type gets an `error` frame, and frames containing a NUL are refused. Motion never travels over the socket.
 
 ### Live video (HLS)
 
@@ -525,7 +525,7 @@ Members never see `audience = "admin"` notifications, in the list, the count or 
 | GET | `/api/mcp/activity/logs`, `…/logs/stats` | admin | 120 / 60 |
 | GET | `/api/mcp/activity/stream` (SSE) | admin | 60 |
 | GET / POST / DELETE | `/api/integration/keys`, `/api/integration/keys/{id}` | admin | – / 10/h / 30/h |
-| GET | `/api/integration/cameras`: with LAN `local_url` and recording state. `local_url` carries `?st=<token>`, a signed token that opens that camera's HLS on a password-protected node (CameraNode 0.1.81+; see `integration::stream_token`) | `osi_` key | 120 |
+| GET | `/api/integration/cameras`: with LAN `local_url` and recording state. `local_url` is always `http://` (CameraNode 0.1.89+ serves its dashboard over HTTPS but keeps stream requests on HTTP, because Home Assistant's player rejects self-signed certificates) and carries `?st=<token>`, a signed token that opens that camera's HLS on a password-protected node (CameraNode 0.1.81+; see `integration::stream_token`) | `osi_` key | 120 |
 | GET | `/api/integration/cameras/{id}/snapshot`: live JPEG via the node | `osi_` key | 30 |
 | POST | `/api/integration/cameras/{id}/recording`: body `{recording: bool}` | `osi_` key | 60 |
 | GET | `/api/integration/status`: camera and node counts, disk, versions, plan | `osi_` key | 120 |

@@ -117,10 +117,31 @@ mode), and play back past recordings.
 ## Browser dashboard (Phase C+)
 
 In addition to the in-terminal TUI, every Camera Node now serves a
-React-based browser dashboard at `http://<node-ip>:8080/`.  In **Local
+React-based browser dashboard at `https://<node-ip>:8080/`.  In **Local
 mode** it's the primary management surface; in **Connected mode** it's
 the only place to view node-local snapshots and recordings (Command
 Center streams the live feed but doesn't store the archive).
+
+**It's HTTPS, with a certificate the node makes for itself** (since
+0.1.89), whenever the dashboard is reachable from other machines on
+your network. So the password and your session can't be read by
+anyone else on the same Wi-Fi. Because the certificate isn't
+issued by an authority your browser knows, **the first visit shows a
+warning**: check the address is your node's, then choose to continue
+(Chrome: **Advanced → Proceed**; Firefox: **Advanced → Accept the
+Risk**). The certificate is kept, so the warning doesn't come back. To
+be sure it's your node, compare the certificate's SHA-256 fingerprint
+in the browser with the one the node logs at start-up ("Serving HTTPS
+on … — certificate SHA-256 …"). Old `http://` links still work: they're
+sent on to `https://`. A dashboard bound to this machine only
+(`127.0.0.1`) stays plain HTTP, since nothing leaves the computer.
+
+**Video streams for Home Assistant stay on plain HTTP.** Home
+Assistant's video player checks certificates and can't trust one a
+device made for itself, so the node still answers stream requests
+(`/hls/…`) without TLS. Each stream link carries a signed token that
+opens one camera's video and expires within two days; your password and
+session never travel on that path.
 
 What the browser dashboard does:
 
@@ -234,6 +255,7 @@ Use environment variables to override database values without modifying the DB:
 | `SOURCEBOX_SENTRY_API_KEY` | API Key |
 | `SOURCEBOX_SENTRY_API_URL` | Command Center URL |
 | `SOURCEBOX_SENTRY_ENCODER` | Video encoder override (e.g. `h264_nvenc`, `libx264`) |
+| `SOURCEBOX_SENTRY_LAN_TLS` | `0` serves the LAN dashboard as plain HTTP, for a node behind your own TLS reverse proxy. Default: HTTPS whenever the dashboard is reachable from the network |
 | `RUST_LOG` | Log level: `trace`, `debug`, `info`, `warn`, `error` |
 
 ### CLI flags
@@ -360,9 +382,16 @@ From the dashboard, **Take Snapshot** pulls one JPEG frame from that camera's mo
 
 ### What's encrypted, and what isn't
 
-**Encrypted at rest:** your API key, in the `config` table, using AES-256-GCM with a key derived from this machine's hardware ID (see the [Security](#security) section above for the full key-derivation story). Copying `data/node.db` to another machine makes the API key undecryptable there — an attacker can't impersonate your node just by lifting the file.
+**Encrypted (AES-256-GCM):** your API key and session secret, and every recording and snapshot saved in `data/node.db`. Each recording and snapshot is bound to its own row, so one can't be swapped into another. The key comes from this computer's machine ID, so a `node.db` copied to another computer can't be read there.
 
-**Not encrypted at rest:** the video chunks and JPEG snapshots themselves. The assumption is that anyone with filesystem access to `data/node.db` can already watch the live stream from the same machine, so encrypting the BLOBs would add complexity without meaningfully raising the bar. If you need at-rest encryption for the video content too, put the `data/` directory on an encrypted volume — BitLocker on Windows, LUKS on Linux, FileVault on macOS.
+**Not encrypted:** the last few minutes of live video, kept as ordinary files in `data/hls/` so the node can stream them and Sentinel AI can look back at a moment that just happened. Settings such as camera names aren't encrypted either; they hold no secrets.
+
+**Who can open it:** since 0.1.88 the `data/` folder belongs to the account CameraNode runs as and nobody else on Linux and macOS, so other accounts on the same computer can't read it. On Windows, `%ProgramData%\SourceBoxSentry` can still be read by other local accounts; keep that computer's accounts to people you trust.
+
+**If the computer is lost or stolen:** the machine ID lives on the same disk as `node.db`, so the encryption above doesn't stop someone who has the whole disk. Two things do:
+
+1. **Encrypt the disk:** BitLocker on Windows, FileVault on macOS, LUKS on Linux. On a Raspberry Pi, where full-disk encryption is hard to run unattended, keep the Pi somewhere physically secure.
+2. **Delete the node in Command Center** (**Settings**, then the node, then **Delete**). Its key stops working at once, so the missing computer can't connect or upload. Set up its replacement with a new key.
 
 ### What happens when you're about to run out of disk
 
